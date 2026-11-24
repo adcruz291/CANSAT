@@ -1,0 +1,64 @@
+{
+  "tipo": "QA lógica del dashboard; sin navegador ni hardware",
+  "total": 12,
+  "pasan": 4,
+  "fallan": 8,
+  "casos": [
+    {
+      "caso": "Acepta el paquete de 17 campos",
+      "resultado": "PASA"
+    },
+    {
+      "caso": "Rechaza un paquete truncado",
+      "resultado": "PASA"
+    },
+    {
+      "caso": "Rechaza campos vacíos",
+      "resultado": "FALLA",
+      "detalle": "Expected values to be strictly equal:\n\n1 !== 0\n"
+    },
+    {
+      "caso": "Rechaza infinito",
+      "resultado": "FALLA",
+      "detalle": "Expected values to be strictly equal:\n\n1 !== 0\n"
+    },
+    {
+      "caso": "Rechaza fase fuera de 0–5",
+      "resultado": "FALLA",
+      "detalle": "Expected values to be strictly equal:\n\n1 !== 0\n"
+    },
+    {
+      "caso": "Rechaza flags fuera de los cuatro bits definidos",
+      "resultado": "FALLA",
+      "detalle": "Expected values to be strictly equal:\n\n1 !== 0\n"
+    },
+    {
+      "caso": "No cuenta dos veces un paquete duplicado",
+      "resultado": "FALLA",
+      "detalle": "Expected values to be strictly equal:\n\n2 !== 1\n"
+    },
+    {
+      "caso": "Descarta paquetes atrasados para calcular pérdidas",
+      "resultado": "FALLA",
+      "detalle": "Expected values to be strictly equal:\n\n1 !== 0\n"
+    },
+    {
+      "caso": "Calcula las pérdidas conocidas",
+      "resultado": "PASA"
+    },
+    {
+      "caso": "Mide el intervalo entre dos muestras de aterrizaje",
+      "resultado": "PASA"
+    },
+    {
+      "caso": "Fijar cero conserva la altura máxima de la captura recalibrada",
+      "resultado": "FALLA",
+      "detalle": "Expected values to be strictly equal:\n\n0 !== 80\n"
+    },
+    {
+      "caso": "Fijar cero conserva la altura original para exportar",
+      "resultado": "FALLA",
+      "detalle": "Expected values to be strictly equal:\n\n0 !== 20\n"
+    }
+  ]
+}
