@@ -2,6 +2,7 @@
 #include <SPI.h>
 #include <LoRa.h>
 #include "contrato.h"
+#include "ciclo.h"
 
 #define LORA_SCK 18   // VERIFICAR: confirmado por Genrikh para estación terrena
 #define LORA_MISO 19  // VERIFICAR
@@ -16,14 +17,12 @@
 #define RADIO_SYNC 0x12
 #define RADIO_PREAMBLE 8
 
-void setup() {
-  Serial.begin(115200);
-  delay(1000);
-  SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_SS);
-  LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
+CicloRx ciclo;
+
+bool iniciarRadio() {
   if (!LoRa.begin(RADIO_HZ)) {
-    Serial.println("# ERROR: no se pudo iniciar LoRa. Revisar cableado y alimentacion.");
-    while (true) delay(1000);
+    Serial.println("# ERROR: no se pudo iniciar LoRa; reintento en 2000 ms.");
+    return false;
   }
   LoRa.setSpreadingFactor(RADIO_SF);
   LoRa.setSignalBandwidth(RADIO_BW);
@@ -32,10 +31,24 @@ void setup() {
   LoRa.setPreambleLength(RADIO_PREAMBLE);
   LoRa.enableCrc();
   LoRa.disableInvertIQ();
-  Serial.println("# Receptor listo: 433 MHz, SF7, BW250, CRC; USB 115200.");
+  Serial.println("# Receptor v2 listo: 433 MHz, SF7, BW250, CRC; USB 115200.");
+  return true;
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+  SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_SS);
+  LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
 }
 
 void loop() {
+  if (ciclo.tocaInicializar(millis())) {
+    const bool ok = iniciarRadio();
+    ciclo.resultado(ok, millis());
+    return;
+  }
+  if (!ciclo.lista) return;
   const int expected = LoRa.parsePacket();
   if (expected <= 0) return;
   char paquete[256];
@@ -49,7 +62,7 @@ void loop() {
   }
   paquete[n] = '\0';
   if (overflow || n != (size_t)expected || !paqueteValido(paquete, n)) {
-    Serial.println("# Paquete descartado: formato distinto de telemetria v1.");
+    Serial.println("# Paquete descartado: formato distinto de telemetria v2.");
     return;
   }
   const float snr = LoRa.packetSnr();

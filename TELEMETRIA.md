@@ -74,4 +74,4 @@ Ejemplo: `$120,24400,0,962.30,26.4,450.52,0.02,0.01,1.00,3.5,-2.1,141,0,-1,-1,-7
 - **Altura a bordo, velocidad en tierra:** si se pierden paquetes, la velocidad se puede seguir calculando.
 - **Texto CSV:** fácil de depurar con el monitor serie. Si falta ancho de banda, se puede migrar a binario.
 - **Reenviar el último estado** (`st`, `flags`) en cada paquete, para que un paquete perdido no oculte un evento.
-- **Pendiente:** el receptor (`contrato.h`) y `herramientas/telemetria.py` todavía aceptan los rangos de v1 (`st` 0–5, `flags` 0–15). Como v2 es un subconjunto, siguen funcionando. La estación terrena ya aplica los rangos de v2.
+- **Validación v2:** los firmwares de `firmware/telemetria/` validan `st` 0–3, `flags` 0–3 y `sd=sb=-1`. La estación terrena aplica los rangos de v2. `herramientas/telemetria.py` conserva el análisis histórico de v1 (incluidas sus fases y simulación de 450 m): no usarlo para certificar fases, altura relativa ni aterrizaje de la misión v2; estos derivados y el CSV v2 los genera el frontend.

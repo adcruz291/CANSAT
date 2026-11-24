@@ -1,2 +1,5 @@
 __pycache__/
 *.py[cod]
+# Builds y registros locales del verificador; el ZIP final queda visible en Git.
+entregas/**/verificacion_*/
+entregas/**/cansat-entrega-*/
