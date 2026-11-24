@@ -1,0 +1,18 @@
+{
+  "validos": 348,
+  "invalidos": 0,
+  "duplicados": 0,
+  "fuera_de_orden": 0,
+  "sesiones": [
+    {
+      "sesion": 1,
+      "recibidos": 348,
+      "perdidos_estimados": 38,
+      "altura_max_m": 450.0,
+      "post_aterrizaje_s": 12.0,
+      "intervalo_max_s": 0.4,
+      "perdida_pct": 9.845
+    }
+  ],
+  "errores": []
+}
