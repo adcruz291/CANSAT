@@ -75,3 +75,9 @@ Ejemplo: `$120,24400,0,962.30,26.4,450.52,0.02,0.01,1.00,3.5,-2.1,141,0,-1,-1,-7
 - **Texto CSV:** fácil de depurar con el monitor serie. Si falta ancho de banda, se puede migrar a binario.
 - **Reenviar el último estado** (`st`, `flags`) en cada paquete, para que un paquete perdido no oculte un evento.
 - **Validación v2:** los firmwares de `firmware/telemetria/` validan `st` 0–3, `flags` 0–3 y `sd=sb=-1`. La estación terrena aplica los rangos de v2. `herramientas/telemetria.py` conserva el análisis histórico de v1 (incluidas sus fases y simulación de 450 m): no usarlo para certificar fases, altura relativa ni aterrizaje de la misión v2; estos derivados y el CSV v2 los genera el frontend.
+
+## 4. Hardware de sensores confirmado por Genrikh
+
+BME280 y MPU6050 comparten I²C: SDA GPIO21, SCL GPIO22, VCC a 3V3 y GND común. El transmisor los identifica en 0x76/0x77 y 0x68/0x69 respectivamente, comprobando chip ID; las direcciones son alternativas, no valores asumidos del circuito. `pres/temp/alt` proceden del BME280 y `ax/ay/az` del MPU6050, en g incluyendo gravedad. No se transmite humedad.
+
+`roll/pitch` son inclinaciones aproximadas por gravedad en los ejes del módulo, solo cerca del reposo; no se afirma actitud dinámica durante caída/autogiro. `yaw=-1` porque no existe referencia absoluta de rumbo. Ver `firmware/telemetria/SENSORES.md` para configuración, validez y fallos. El formato y las fases calculadas en tierra no cambian. Las lecturas que fallen permanecen en -1, con reintento independiente. La lectura/precisión efectiva sigue pendiente de comprobar en el circuito.

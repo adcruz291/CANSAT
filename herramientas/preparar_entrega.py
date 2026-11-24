@@ -16,13 +16,17 @@ ROOT = Path(__file__).resolve().parents[1]
 FILES = [
     'TELEMETRIA.md', 'estacion_terrena.html',
     'firmware/telemetria/README.md', 'firmware/telemetria/GUIA_COMPANERO.md',
+    'firmware/telemetria/SENSORES.md',
     'firmware/telemetria/transmisor/transmisor.ino',
     'firmware/telemetria/transmisor/paquete.h', 'firmware/telemetria/transmisor/ciclo.h',
+    'firmware/telemetria/transmisor/sensores.h',
     'firmware/telemetria/receptor/receptor.ino',
     'firmware/telemetria/receptor/contrato.h', 'firmware/telemetria/receptor/ciclo.h',
     'herramientas/preparar_entrega.py', 'pruebas/test_entrega.py',
     'pruebas/test_firmware.cpp', 'pruebas/test_transmisor.cpp', 'pruebas/test_receptor.cpp',
+    'pruebas/test_sensores.cpp', 'pruebas/fixture_sensores.h',
     'pruebas/dobles/Arduino.h', 'pruebas/dobles/SPI.h', 'pruebas/dobles/LoRa.h',
+    'pruebas/dobles/Wire.h',
     'pruebas/firmware_frontend.cjs', 'pruebas/dashboard_qa.cjs',
 ]
 
@@ -113,7 +117,7 @@ def verify(args, root, output):
         report['versiones']['g++'] = run('Version compilador nativo', [tools['cxx'], '--version']).splitlines()[0]
         report['versiones']['node'] = run('Version Node', [tools['node'], '--version']).strip()
         binaries = {}
-        for name in ['firmware', 'transmisor', 'receptor']:
+        for name in ['firmware', 'transmisor', 'receptor', 'sensores']:
             binary = output / f'test_{name}'
             run(f'Compilar prueba {name}', [tools['cxx'], '-std=c++11', '-Wall', '-Wextra', '-Werror',
                 '-pedantic', '-I', str(root / 'pruebas/dobles'), str(root / f'pruebas/test_{name}.cpp'), '-o', str(binary)])
@@ -124,6 +128,9 @@ def verify(args, root, output):
             run(f'Frontend {mode}', [tools['node'], str(root / 'pruebas/firmware_frontend.cjs'), *script_args], data)
         data = run('Capturar receptor real con dobles', [str(binaries['receptor']), '--emit'])
         run('Receptor a frontend', [tools['node'], str(root / 'pruebas/firmware_frontend.cjs'), '--receptor'], data)
+        data = run('Capturar sensores y transmisor con I2C de prueba', [str(binaries['sensores']), '--emit'])
+        data = run('Sensores a receptor real con dobles', [str(binaries['receptor']), '--entrada'], data)
+        run('Sensores a receptor a frontend', [tools['node'], str(root / 'pruebas/firmware_frontend.cjs'), '--sensores'], data)
         run('QA frontend 20 casos', [tools['node'], str(root / 'pruebas/dashboard_qa.cjs')])
         run('Pruebas de entrega y dependencias ausentes', [sys.executable, str(root / 'pruebas/test_entrega.py')])
         for name in ['transmisor', 'receptor']:

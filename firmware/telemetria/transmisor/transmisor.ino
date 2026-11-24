@@ -3,6 +3,7 @@
 #include <LoRa.h>
 #include "paquete.h"
 #include "ciclo.h"
+#include "sensores.h"
 
 // VERIFICAR: mismos GPIO que el transmisor provisional proporcionado por Genrikh.
 #define LORA_SCK 18   // VERIFICAR
@@ -18,15 +19,17 @@
 #define RADIO_SYNC 0x12
 #define RADIO_PREAMBLE 8
 #define RADIO_TX_DBM 17
+#define SENSOR_SDA 21       // VERIFICAR: confirmado por Genrikh
+#define SENSOR_SCL 22       // VERIFICAR: confirmado por Genrikh
+#define BME_ADDR_1 0x76     // VERIFICAR: se identifica el chip en ambas direcciones
+#define BME_ADDR_2 0x77     // VERIFICAR
+#define MPU_ADDR_1 0x68     // VERIFICAR
+#define MPU_ADDR_2 0x69     // VERIFICAR
 CicloTx ciclo;
+SensoresCanSat sensores(Wire, BME_ADDR_1, BME_ADDR_2, MPU_ADDR_1, MPU_ADDR_2);
 
 Medidas leerMedidas() {
-  // PENDIENTE: integrar únicamente los sensores reales y sus direcciones/pines.
-  // Sin sensores: -1 significa sin dato, no una medición.
-  // Misión v2: la estación calcula fases y cero; mantener st=0 y flags=0.
-  // alt deberá ser altura barométrica estándar (1013.25 hPa), SIN restar el suelo.
-  // sd y sb están reservados en -1: ya no hay separación ni carga secundaria.
-  return Medidas{};
+  return sensores.leer(millis());
 }
 
 bool iniciarRadio() {
@@ -42,7 +45,7 @@ bool iniciarRadio() {
   LoRa.enableCrc();
   LoRa.disableInvertIQ();
   LoRa.setTxPower(RADIO_TX_DBM);
-  Serial.println("# Radio TX lista: 433 MHz, SF7, BW250, CRC; SIN sensores integrados.");
+  Serial.println("# Radio TX lista: 433 MHz, SF7, BW250, CRC; BME280 y MPU6050.");
   return true;
 }
 
@@ -55,9 +58,10 @@ void recuperarRadio(uint32_t ahora, const char* motivo) {
 void setup() {
   Serial.begin(115200);
   delay(1000);
-  Serial.println("# CanSAT v2: base SIN sensores; fase y cero calculados en tierra.");
+  Serial.println("# CanSAT v2: BME280 + MPU6050; fase y cero calculados en tierra.");
   SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_SS);
   LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
+  sensores.iniciar(SENSOR_SDA, SENSOR_SCL);
 }
 
 void loop() {

@@ -6,12 +6,12 @@ Esta versión es una **base de comunicación v2**, con verificaciones de softwar
 
 | Placa | Abrir | Conservar en la misma carpeta |
 |---|---|---|
-| CanSAT: módulo del huevo con autogiro | `firmware/telemetria/transmisor/transmisor.ino` | `paquete.h` y `ciclo.h` del transmisor |
+| CanSAT: módulo del huevo con autogiro | `firmware/telemetria/transmisor/transmisor.ino` | `paquete.h`, `ciclo.h` y `sensores.h` del transmisor |
 | Estación terrena: recibe y conecta a computadora | `firmware/telemetria/receptor/receptor.ino` | `contrato.h` y `ciclo.h` del receptor |
 
 Abrir el `.ino` directamente en Arduino IDE. Si se copia/pega, crear una pestaña para **cada `.h` de esa carpeta**, con el nombre exacto. Los dos archivos `ciclo.h` tienen funciones distintas; no intercambiarlos. Compilar cada sketch de forma independiente. No usar el ZIP anterior que contenía solo el transmisor.
 
-Seleccionar **ESP32 Dev Module** para el ESP32-WROOM-32 indicado por el equipo. Versiones de referencia: core **esp32 de Espressif Systems 3.3.12**, biblioteca **LoRa de Sandeep Mistry 0.8.0**, Arduino CLI 1.6.0. Instalar biblioteca/core desde los administradores del IDE si no están disponibles. No se requieren bibliotecas de sensores en esta base.
+Seleccionar **ESP32 Dev Module** para el ESP32-WROOM-32 indicado por el equipo. Versiones de referencia: core **esp32 de Espressif Systems 3.3.12**, biblioteca **LoRa de Sandeep Mistry 0.8.0**, Arduino CLI 1.6.0. Instalar biblioteca/core desde los administradores del IDE si no están disponibles. Los sensores se leen por registros con `Wire`, incluido con el core ESP32; no hay otra biblioteca que instalar.
 
 ## Conexión y radio
 
@@ -38,11 +38,13 @@ Parámetros en ambos: **433 MHz, SF7, BW 250 kHz, CR 4/5, sync word 0x12, preám
 6. Repetir con el otro equipo. Encender ambos, observar el **receptor** a **115200 baudios** y guardar las líneas crudas. Se esperan líneas `$` de 17 campos; los diagnósticos comienzan con `#`. El aviso TX local no confirma recepción.
 7. Cerrar monitor serie, abrir `estacion_terrena.html` en Chrome/Edge con Web Serial, pulsar **Conectar receptor USB** y seleccionar el receptor. No iniciar simulación durante una captura real. Descargar CSV antes de borrar datos.
 
-## Qué se puede medir ahora
+## Qué se puede medir ahora (BME280 y MPU6050)
 
-`seq/ms` proceden del transmisor y `rssi/snr` del receptor. Los modelos de sensores no están confirmados ni sus controladores integrados: presión, temperatura, altura, aceleración y orientación se envían como **`-1` (sin dato)**. `st=flags=0`, `sd=sb=-1`. La interfaz no puede inferir un vuelo sin altura válida; una gráfica vacía con esos campos no demuestra fallo de radio.
+`seq/ms` proceden del transmisor y `rssi/snr` del receptor. **Los sensores ya están integrados**: BME280 para presión/temperatura/altitud estándar y MPU6050 para aceleración en g e inclinación aproximada cerca del reposo. El bus compartido va en **SDA GPIO21 / SCL GPIO22**, VCC 3V3 y GND común, según la tabla de Genrikh. Ver `SENSORES.md`.
 
-El frontend v2 calcula fases y cero de altura. Al integrar un barómetro, enviar altura estándar referida a 1013.25 hPa, sin restar el suelo a bordo; encender en el suelo para el cero automático. La misión prevista es de 20–25 m, límite 30 m. Estas instrucciones no autorizan una prueba de lanzamiento ni afirman precisión de sensores.
+Si un sensor falta o falla, sus campos van en `-1`; se reintenta cada 2000 ms. La lectura del circuito aún no se ha verificado físicamente. **Yaw queda en -1**, ya que no hay referencia de rumbo absoluto. Roll/pitch no son actitud en vuelo: pueden ir sin dato durante caída o giro fuerte. Los ejes son los del módulo y falta contrastar sesgo/montaje. `st=flags=0`, `sd=sb=-1`.
+
+El frontend v2 calcula fases y cero de altura. El BME280 transmite altura estándar referida a 1013.25 hPa, sin restar el suelo a bordo; encender en el suelo para el cero automático. La misión prevista es de 20–25 m, límite 30 m. Estas instrucciones no autorizan una prueba de lanzamiento ni afirman precisión de sensores.
 
 El transmisor usa TX asíncrona con timeout de 1000 ms y recuperación a 2000 ms. No llama a `isTransmitting()`, que es privado en LoRa 0.8.0: consulta la disponibilidad mediante `beginPacket()` sin iniciar otro envío ni consumir secuencia. No retransmite muestras fallidas ni genera ráfagas para recuperar retrasos. El receptor reintenta inicialización cada 2000 ms; el silencio de radio no permite distinguir emisor apagado de una avería física.
 
@@ -72,6 +74,6 @@ Los datos de vuelo y radio usados por las pruebas son artificiales; los dobles e
 - Modelo de placa, versiones de core/biblioteca, sketch cargado y resultado/log de carga de cada equipo.
 - Mensaje de arranque a 115200, diagnóstico de radio y captura USB cruda del receptor.
 - Estado de antenas, alimentación y circuito probado; distancia y duración medidas si se prueba enlace.
-- Identificación exacta de sensores y conexiones antes de integrar lecturas.
+- Confirmación de BME280/MPU6050 identificados, direcciones detectadas, conexiones y medidas de referencia en reposo.
 
 Compilación correcta no certifica carga, sensores, recepción, alcance ≥250 m, vuelo ni transmisión real durante 10 s después de aterrizar. Mantenerlos pendientes hasta obtener registros físicos.

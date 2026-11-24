@@ -6,7 +6,7 @@ Estos sketches sustituyen el mensaje provisional `CANSAT,PRUEBA,N` por el contra
 
 | Equipo | Abrir en Arduino IDE | Archivos que deben permanecer juntos |
 |---|---|---|
-| ESP32 del CanSAT, transmisor | `transmisor/transmisor.ino` | `transmisor.ino`, `paquete.h` y `ciclo.h` |
+| ESP32 del CanSAT, transmisor | `transmisor/transmisor.ino` | `transmisor.ino`, `paquete.h`, `ciclo.h` y `sensores.h` |
 | ESP32 de estación terrena, receptor | `receptor/receptor.ino` | `receptor.ino`, `contrato.h` y `ciclo.h` |
 
 Usar soporte de placas ESP32 y la biblioteca **LoRa de Sandeep Mistry**, como en los programas provisionales. Para el ESP32-WROOM-32 indicado por Genrikh, se utiliza **ESP32 Dev Module** (`esp32:esp32:esp32`). Los originales están conservados en `firmware/provisional/`.
@@ -62,11 +62,11 @@ Estas garantías acotan la espera controlada por la aplicación, no pueden inter
 
 ## Pendiente para medir la misión real
 
-El transmisor tiene un punto de integración llamado **`leerMedidas()`**. Actualmente devuelve lecturas `-1`, fase `st=0` y `flags=0`, de acuerdo con la opción de datos ausentes del contrato. `seq` y `ms` sí se generan en la placa; RSSI/SNR se obtienen en el receptor. No hay lecturas de sensores simuladas.
+El transmisor ahora integra **BME280 y MPU6050** con el cableado confirmado por Genrikh: SDA 21, SCL 22, alimentación 3V3 y GND común. `leerMedidas()` devuelve presión, temperatura y altitud estándar del BME280, aceleración del MPU6050 y estimaciones de inclinación cerca del reposo. Si un sensor falla, sus campos quedan en `-1` y se reintenta cada 2000 ms, sin inventar lecturas ni reutilizar muestras anteriores. Yaw permanece en `-1`: no hay referencia de rumbo absoluto.
 
-Faltan modelos, conexión y calibración de sensores para integrar presión, temperatura, altura, aceleración y orientación. Las fases las calcula el frontend: el firmware no acciona mecanismos ni detecta separación. Ya no hay carga secundaria que localizar; sus campos anteriores permanecen reservados en `-1`. El transmisor continúa enviando indefinidamente mientras esté alimentado; eso no prueba detección de aterrizaje ni el requisito de 10 s posterior a este.
+Ver **`SENSORES.md`** para direcciones I²C identificadas automáticamente, unidades, rangos y limitaciones. Los ejes son los del módulo; roll/pitch estimados por gravedad no son actitud dinámica durante caída/autogiro. No se necesitan bibliotecas adicionales: el nuevo `sensores.h` usa `Wire` del core ESP32. Conservar los cuatro archivos de la carpeta del transmisor.
 
-**La estación terrena muestra cada `-1` como "sin dato"** y no calcula velocidad, altura máxima ni aceleración total con esos campos. Con esta base solo se validan el enlace, las secuencias, RSSI/SNR y el formato. El problema del marcador ambiguo (un `-1.00` real en temperatura u orientación) está explicado en `pruebas/RESULTADOS.md`; acordar cualquier cambio de contrato con el equipo.
+El frontend muestra `-1` como sin dato. La radio y la lectura efectiva del circuito todavía no se han probado físicamente. La calibración/precisión y el montaje de ejes requieren pruebas de mesa, aunque el código y los cálculos se verifiquen en computadora.
 
 **Misión v2 (ver `TELEMETRIA.md`):** solo transmite el módulo del huevo con autogiro; se enciende en el suelo, se sube a 20–25 m (límite 30 m) y se suelta. La estación calcula las cuatro fases y el cero con las cinco primeras alturas válidas. El transmisor deja `st=0` y `flags=0`; `alt` debe ser la altura barométrica estándar referida a 1013.25 hPa, sin ponerla en cero a bordo. `paquete.h` y `contrato.h` ya validan los rangos v2. Se mantienen 5 Hz; los 10 Hz son una propuesta de la especificación y requieren medir el tiempo de transmisión y la tasa efectiva antes de cambiarlos.
 
@@ -75,7 +75,7 @@ Faltan modelos, conexión y calibración de sensores para integrar presión, tem
 1. Guardar los programas provisionales antes de cargar estos sketches. Compilar cada carpeta para la placa correspondiente y cargar el transmisor en el CanSAT y el receptor en la estación.
 2. Con ambos equipos encendidos y antenas conectadas, abrir el monitor serie del **receptor** a 115200 y confirmar líneas `$...` de 17 campos. Los diagnósticos `# TX` del transmisor son solo locales y no son las líneas que necesita el dashboard.
 3. Cerrar el monitor serie para liberar el puerto. Abrir `estacion_terrena.html` en el navegador con Web Serial, pulsar **Conectar USB** y elegir el receptor. No iniciar simultáneamente **Simular vuelo**.
-4. Comprobar paquetes recibidos y RSSI/SNR; descargar CSV. Los campos de sensores permanecen sin medición hasta integrar `leerMedidas()`.
+4. Comprobar paquetes recibidos y RSSI/SNR; descargar CSV. Los campos de sensores deben llegar con medidas si el hardware responde; los ausentes o fallidos se muestran como sin dato.
 
 ## Verificación realizada en computadora
 
@@ -92,11 +92,11 @@ Pasaron las pruebas nativas de generación/validación de paquetes, la integraci
 
 `herramientas/telemetria.py` y los archivos `SIMULADO_*` existentes pertenecen a v1: no usar sus fases, máximo absoluto ni postaterrizaje para certificar la misión v2. Para los derivados v2 se utiliza el CSV del frontend.
 
-**Compilación ESP32 realizada:** se encontró el Arduino CLI incluido en el IDE instalado y se compilaron los dos sketches completos, sin cargarlos a las placas. Configuración: Arduino CLI 1.6.0, core `esp32:esp32` 3.3.12, placa `esp32:esp32:esp32` (ESP32 Dev Module) y LoRa 0.8.0. La biblioteca se descargó en `/tmp` para la verificación; esto no la instala en el administrador de bibliotecas del IDE.
+**Compilación ESP32 realizada (transmisor con sensores actualizado):** se encontró el Arduino CLI incluido en el IDE instalado y se compilaron los dos sketches completos, sin cargarlos a las placas. Configuración: Arduino CLI 1.6.0, core `esp32:esp32` 3.3.12, placa `esp32:esp32:esp32` (ESP32 Dev Module) y LoRa 0.8.0. La biblioteca se descargó en `/tmp` para la verificación; esto no la instala en el administrador de bibliotecas del IDE.
 
 | Sketch | Flash utilizada | RAM estática utilizada | Resultado |
 |---|---|---|---|
-| Transmisor | 280428 bytes | 22300 bytes | Compilación correcta |
+| Transmisor | 313752 bytes | 23756 bytes | Compilación correcta |
 | Receptor | 286832 bytes | 22284 bytes | Compilación correcta |
 
 Con `arduino-cli` disponible y la biblioteca LoRa instalada, se puede repetir:
@@ -106,13 +106,13 @@ arduino-cli compile --fqbn esp32:esp32:esp32 firmware/telemetria/transmisor
 arduino-cli compile --fqbn esp32:esp32:esp32 firmware/telemetria/receptor
 ```
 
-Si la biblioteca está en otra carpeta, agregar `--library /ruta/a/arduino-LoRa`. Para esta verificación se usaron carpetas de compilación separadas en `/tmp`. La recepción en radio, la lectura de sensores y el funcionamiento físico siguen pendientes; compilar correctamente no acredita esas pruebas.
+Si la biblioteca está en otra carpeta, agregar `--library /ruta/a/arduino-LoRa`. Para esta verificación se usaron carpetas de compilación separadas en `/tmp`. La recepción en radio, la lectura efectiva de sensores y el funcionamiento físico siguen pendientes; compilar correctamente no acredita esas pruebas.
 
 ## Entrega reproducible
 
 La guía para cargar/copiar archivos, diagnosticar USB y devolver evidencias está en `GUIA_COMPANERO.md`. Cada carpeta de sketch requiere su propio `ciclo.h`, además de `paquete.h` o `contrato.h`.
 
-El verificador `herramientas/preparar_entrega.py` ejecuta las pruebas nativas de contrato, los sketches reales con dobles de radio/Serial/reloj, el recorrido receptor→HTML, el vuelo artificial, los 20 casos de QA, los controles de integridad/dependencia ausente y la compilación completa de ambos ESP32. Los controles de radio cubren finalización asíncrona normal, timeout, límites temporales, preparación fallida, escritura parcial, reintentos, configuración reaplicada, secuencia conservada y wrap del reloj. El doble no expone la función privada `isTransmitting()`.
+El verificador `herramientas/preparar_entrega.py` ejecuta las pruebas nativas de contrato, los sketches reales con dobles de radio/Serial/reloj e I²C y las pruebas BME280/MPU6050, el recorrido receptor→HTML, el vuelo artificial, los 20 casos de QA, los controles de integridad/dependencia ausente y la compilación completa de ambos ESP32. Los controles de radio cubren finalización asíncrona normal, timeout, límites temporales, preparación fallida, escritura parcial, reintentos, configuración reaplicada, secuencia conservada y wrap del reloj. El doble no expone la función privada `isTransmitting()`.
 
 ```bash
 python3 herramientas/preparar_entrega.py verificar --arduino-cli /ruta/a/arduino-cli --lora /ruta/a/arduino-LoRa --salida /tmp/cansat-verificacion

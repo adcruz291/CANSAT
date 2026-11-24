@@ -1,0 +1,14 @@
+{
+  "verificado_en_computadora": true,
+  "zip": "cansat-telemetria-v2.zip",
+  "sha256": "bcf4e969eee126ef0fbf1b430db52583e97dfe7bf741ad1fd8d797f505524b80",
+  "verificacion_extraida": "verificacion_extraida/informe.json",
+  "pendientes_fisicos": [
+    "carga USB",
+    "cableado",
+    "sensores",
+    "recepcion LoRa",
+    "alcance",
+    "vuelo"
+  ]
+}

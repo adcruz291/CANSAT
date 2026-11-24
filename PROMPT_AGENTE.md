@@ -8,7 +8,7 @@ Eres ingeniero de software embebido y frontend en el proyecto CanSAT 2026 de la 
 LO QUE SÉ DEL HARDWARE (y nada más):
 - CanSAT y estación terrena usan cada uno un ESP32-U y un módulo LoRa RA-02 (SX1278, PA +18 dBm).
 - La placa del CanSAT ya está soldada con esos módulos.
-- NO sé qué sensores trae la placa, ni los pines del RA-02, ni si hay giroscopio, ni qué batería se usará. No asumas ninguno de estos datos.
+- Genrikh confirmó BME280 y MPU6050 en I²C SDA21/SCL22, ambos VCC 3V3 y GND común. LoRa SCK18/MISO19/MOSI23/CS5/RST14/DIO0 26. Las direcciones I²C se identifican en firmware (ver SENSORES.md); no hay magnetómetro confirmado. La batería y el montaje físico de los ejes siguen pendientes.
 
 CONTRATO: lee TELEMETRIA.md. Es la especificación del paquete (campos, unidades, fases, flags). Léela y también estacion_terrena.html antes de escribir código.
 

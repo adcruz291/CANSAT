@@ -11,7 +11,7 @@ std::string muestra(uint32_t seq, uint32_t ms) {
   assert(n > 0);
   return packet;
 }
-int main(int argc, char**) {
+int main(int argc, char** argv) {
   LoRa.fallosInicio = 2;
   setup();
   assert(Serial.baud == 115200);
@@ -48,6 +48,12 @@ int main(int argc, char**) {
   loop(); const unsigned inicios = LoRa.inicios;
   relojPrueba += 1999; loop(); assert(LoRa.inicios == inicios);
   relojPrueba += 1; loop(); assert(LoRa.inicios == inicios+1 && ciclo.lista);
-  if (argc > 1) std::cout << capturada;
+  if (argc > 1 && std::string(argv[1]) == "--entrada") {
+    Serial.salida.clear();
+    std::string line;
+    while (std::getline(std::cin, line)) { LoRa.push(line); loop(); }
+    std::cout << Serial.salida;
+  }
+  else if (argc > 1) std::cout << capturada;
   else std::cout << "Receptor real con dobles: rechazo, recuperacion y salida USB exacta OK\n";
 }

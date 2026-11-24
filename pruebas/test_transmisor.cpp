@@ -1,9 +1,11 @@
 #include "../firmware/telemetria/transmisor/transmisor.ino"
 #include <assert.h>
 #include <iostream>
+#include "fixture_sensores.h"
 
 void arrancar(unsigned fallos = 0) {
   ciclo = CicloTx{}; LoRa = LoRaPrueba{}; Serial = SerialPrueba{};
+  prepararSensores();
   relojPrueba = 0; LoRa.fallosInicio = fallos; setup(); loop();
 }
 size_t errores() {

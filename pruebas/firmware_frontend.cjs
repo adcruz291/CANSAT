@@ -20,7 +20,17 @@ assert.equal(vm.runInContext('bad',context),0);
 assert.equal(vm.runInContext('D[0].rssi',context),-75);
 assert.equal(vm.runInContext('D[0].snr',context),8.5);
 assert.equal(vm.runInContext('D.every(d=>d.st===0&&d.flags===0&&d.sd===-1&&d.sb===-1)',context),true);
-if (process.argv.includes('--receptor')) {
+if (process.argv.includes('--sensores')) {
+  assert.equal(lines.length,1);
+  assert.equal(vm.runInContext('D[0].seq',context),1);
+  assert.equal(vm.runInContext('D[0].pres',context),1006.53);
+  assert.equal(vm.runInContext('D[0].temp',context),25.08);
+  assert.equal(vm.runInContext('D[0].az',context),1);
+  assert.equal(vm.runInContext('D[0].g',context),1);
+  assert.equal(vm.runInContext('D[0].roll',context),0);
+  assert.equal(vm.runInContext('D[0].yaw',context),-1);
+  assert.equal(vm.runInContext('D[0].alt>56&&D[0].alt<57',context),true);
+} else if (process.argv.includes('--receptor')) {
   assert.equal(lines.length,2);
   assert.equal(vm.runInContext('D[0].seq',context),42);
   assert.equal(vm.runInContext('D[1].seq',context),43);
