@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Estación terrena · CanSAT 2026</title>
+<style>
+/* Sin fuentes ni CDN: en el campo puede no haber internet. Claro por defecto (sol), oscuro si el sistema lo pide. */
+:root{--bg:#e9edf3;--pn:#fff;--ink:#0d1b2a;--mu:#56657a;--ln:#d3dae4;--ac:#1f4fe0;--wn:#d97e00;--ok:#12805c;--bd:#c8302b}
+@media(prefers-color-scheme:dark){:root{--bg:#0a1220;--pn:#121d31;--ink:#e8eef8;--mu:#93a3bb;--ln:#233350;--ac:#6c93ff;--wn:#ffb02e;--ok:#35c48f;--bd:#ff6b66}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 "Avenir Next","Segoe UI",system-ui,sans-serif}
+.w{max-width:1280px;margin:auto;padding:16px;display:grid;gap:12px}
+.c{background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:12px 14px;min-width:0}
+h1{font-size:19px;margin:0;letter-spacing:-.01em}h2{font-size:13px;margin:0 0 6px;color:var(--mu);font-weight:600}
+header{display:flex;flex-wrap:wrap;gap:8px;align-items:center}header h1{margin-right:auto}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;border:1px solid var(--ln);background:var(--pn);font-weight:600;font-size:13px}
+.chip::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--bd)}.chip.on::before{background:var(--ok)}
+button{font:inherit;font-weight:600;color:var(--ink);background:var(--pn);border:1px solid var(--ln);padding:6px 12px;border-radius:8px;cursor:pointer}
+button.p{background:var(--ac);border-color:var(--ac);color:#fff}button:hover{border-color:var(--ac)}
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+ol li{padding:8px 10px;border-radius:8px;background:var(--pn);border:1px solid var(--ln);color:var(--mu);font-size:13px;font-weight:600;border-top:4px solid var(--ln)}
+ol li.done{color:var(--ink);border-top-color:var(--ok)}ol li.now{color:var(--ink);border-top-color:var(--ac);box-shadow:0 0 0 2px var(--ac) inset}
+.top{display:grid;grid-template-columns:minmax(0,2fr) minmax(250px,1fr);gap:12px}
+.hero{display:grid;gap:12px;align-content:start}
+.big{font-size:clamp(46px,6.5vw,80px);line-height:1;font-weight:650;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.big small{font-size:.3em;color:var(--mu);font-weight:500;letter-spacing:0;margin-left:4px}
+.row{display:flex;gap:18px;flex-wrap:wrap}.row b{font-size:26px;font-variant-numeric:tabular-nums;display:block;line-height:1.1}
+.kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.kp b{font-size:24px;font-variant-numeric:tabular-nums;display:block}
+.kp small,.row small{color:var(--mu)}
+.fl{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.fl span{font-size:12px;padding:2px 8px;border-radius:6px;border:1px solid var(--ln);color:var(--mu)}.fl span.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.ch{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+canvas{width:100%;display:block;touch-action:pan-y}.cv{height:170px}#ca{height:300px}
+.bar{height:8px;border-radius:5px;background:var(--ln);overflow:hidden;margin:6px 0}.bar i{display:block;height:100%;width:0;background:var(--ac)}.bar.ok i{background:var(--ok)}
+.bt{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+ul{margin:0;padding:0;list-style:none;max-height:150px;overflow:auto;font-size:13px}ul li{padding:3px 0;border-bottom:1px solid var(--ln)}ul li b{font-variant-numeric:tabular-nums;color:var(--ac)}
+pre{margin:6px 0 0;height:100px;overflow:auto;font-size:12px;color:var(--mu)}
+@media(max-width:800px){.top,.bt{grid-template-columns:1fr}ol{grid-template-columns:repeat(3,1fr)}}
+@media(prefers-reduced-motion:no-preference){.bar i{transition:width .2s}}
+</style></head><body><main class="w">
+<header><h1>Estación terrena · CanSAT 2026</h1>
+ <span class="chip" id="lk" role="status" aria-live="polite">Sin enlace</span>
+ <button class="p" onclick="conectar()">Conectar USB</button>
+ <button onclick="cero()">Fijar altura 0</button><button onclick="csv()">Descargar CSV</button>
+ <button onclick="sim()">Simular vuelo</button><button onclick="reset()">Reiniciar</button></header>
+<ol id="ph" aria-label="Fases de la misión"></ol>
+<section class="top">
+ <div class="c"><canvas id="ca" aria-label="Altura contra tiempo"></canvas></div>
+ <div class="hero">
+  <div class="c"><h2>Altura sobre el suelo</h2><div class="big"><span id="alt">–</span><small>m</small></div></div>
+  <div class="c"><h2>Velocidad vertical (negativa = cayendo)</h2><div class="big"><span id="vel">–</span><small>m/s</small></div></div>
+  <div class="c"><div class="row"><div><small>Altura máxima</small><b id="max">–</b></div><div><small>Fase</small><b id="fase">–</b></div></div></div>
+ </div></section>
+<section class="kp">
+ <div class="c"><small>Temperatura °C</small><b id="temp">–</b></div>
+ <div class="c"><small>Presión hPa</small><b id="pres">–</b></div>
+ <div class="c"><small>Aceleración (g)</small><b id="acc">–</b></div>
+ <div class="c"><small>RSSI dBm · SNR dB</small><b id="rssi">–</b></div>
+ <div class="c"><small>Paquetes · perdidos</small><b id="pk">–</b></div>
+ <div class="c"><small>Último paquete hace</small><b id="age">–</b></div>
+ <div class="c"><h2>Orientación</h2><canvas id="at" width="110" height="110" style="width:110px;margin:auto" aria-label="Horizonte artificial"></canvas><small id="rp"></small></div></section>
+<section class="ch">
+ <div class="c"><canvas class="cv" id="c1" aria-label="Velocidad vertical"></canvas></div>
+ <div class="c"><canvas class="cv" id="c2" aria-label="Aceleración total"></canvas></div>
+ <div class="c"><canvas class="cv" id="c3" aria-label="Intensidad de señal"></canvas></div></section>
+<section class="bt">
+ <div class="c"><h2>Aterrizaje: transmisión posterior (requisito ≥ 10 s)</h2><div class="bar" id="lb"><i></i></div><b id="lt">Aún no aterriza</b>
+  <div class="fl" id="fl"></div><p id="sec" style="margin:8px 0 0;color:var(--mu)">Carga secundaria: sin dato</p></div>
+ <div class="c"><h2>Eventos</h2><ul id="ev"><li>Sin eventos</li></ul></div></section>
+<details class="c"><summary>Paquetes crudos</summary><pre id="log"></pre></details>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const F=['seq','ms','st','pres','temp','alt','ax','ay','az','roll','pitch','yaw','flags','sd','sb','rssi','snr'];
+const PH=['Preparación','Ascenso','Caída libre','Separación','Autogiro','Aterrizaje'];
+const FL=['Separación','Autogiro','Aterrizado','Carga 2 hallada'];
+let D,off,maxA,lost,tLast,tL,hv=null,timer,pend=false;
+$('ph').innerHTML=PH.map(p=>`<li>${p}</li>`).join('');$('fl').innerHTML=FL.map(f=>`<span>${f}</span>`).join('');
+function reset(){clearInterval(timer);D=[];off=0;maxA=0;lost=0;tLast=0;tL=null;$('ev').innerHTML='<li>Sin eventos</li>';$('log').textContent='';draw()}
+function ingest(line){
+  const L=$('log');L.textContent+=line+'\n';if(L.textContent.length>5000)L.textContent=L.textContent.slice(-3500);L.scrollTop=1e9;
+  if(line[0]!=='$')return;const v=line.slice(1).split(',').map(Number);
+  if(v.length!==F.length||v.some(isNaN))return;
+  const d={};F.forEach((k,i)=>d[k]=v[i]);d.alt-=off;
+  const q=D[D.length-1];d.vel=0;
+  if(q){if(d.seq>q.seq+1)lost+=d.seq-q.seq-1;const dt=(d.ms-q.ms)/1000;d.vel=dt>0?q.vel*.6+.4*(d.alt-q.alt)/dt:q.vel;
+    if(d.st!==q.st)evento(d,'Fase: '+PH[d.st])}else evento(d,'Primer paquete');
+  d.g=Math.hypot(d.ax,d.ay,d.az);maxA=Math.max(maxA,d.alt);
+  if(d.st===5&&tL===null)tL=d.ms;D.push(d);tLast=Date.now();draw()}
+function evento(d,t){const u=$('ev');if(u.firstChild&&u.firstChild.textContent==='Sin eventos')u.innerHTML='';
+  u.insertAdjacentHTML('afterbegin',`<li><b>T+${((d.ms-(D[0]?D[0].ms:d.ms))/1000).toFixed(1)} s</b> ${t}</li>`)}
+function cero(){if(D.length){const a=D[D.length-1].alt;off+=a;D.forEach(d=>d.alt-=a);maxA=0;draw()}}
+function draw(){if(!pend){pend=true;requestAnimationFrame(()=>{pend=false;paint()})}}
+function paint(){
+  const d=D[D.length-1],f=(x,n=1)=>x.toFixed(n);
+  document.querySelectorAll('#ph li').forEach((li,i)=>li.className=d?(i<d.st?'done':i===d.st?'now':''):'');
+  if(d){$('alt').textContent=f(d.alt);$('vel').textContent=f(d.vel);$('max').textContent=f(maxA)+' m';$('fase').textContent=PH[d.st];
+   $('temp').textContent=f(d.temp);$('pres').textContent=f(d.pres);$('acc').textContent=f(d.g,2);
+  $('rssi').textContent=d.rssi+' · '+f(d.snr);$('pk').textContent=D.length+' · '+lost;
+   $('rp').textContent=`Roll ${f(d.roll,0)}° · Pitch ${f(d.pitch,0)}°`;
+   document.querySelectorAll('#fl span').forEach((s,i)=>s.className=(d.flags>>i)&1?'on':'');
+   const t=tL===null?0:Math.min(10,(d.ms-tL)/1000);$('lb').firstChild.style.width=t*10+'%';$('lb').className='bar'+(t>=10?' ok':'');
+   $('lt').textContent=tL===null?'Aún no aterriza':t>=10?'✓ Cumplido: más de 10 s transmitiendo':`${f(t)} s de 10 s`;
+   $('sec').textContent=d.sd>=0?`Carga secundaria: ${f(d.sd)} m a ${f(d.sb,0)}°`:'Carga secundaria: sin dato';attitude(d)}
+  chart('ca','alt',{t:'Altura (m)',fill:1,ref:[{y:200,t:'Autogiro 200 m'},{y:450,t:'Liberación 450 m'}]});
+  chart('c1','vel',{t:'Velocidad vertical (m/s)',ref:[{y:-8,t:''},{y:-12,t:'Objetivo 8–12'}]});
+  chart('c2','g',{t:'Aceleración total (g)'});chart('c3','rssi',{t:'RSSI (dBm)'})}
+function chart(id,k,o){
+  const c=$(id),r=devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;c.width=w*r;c.height=h*r;
+  const x=c.getContext('2d');x.scale(r,r);const cs=getComputedStyle(document.documentElement),C=n=>cs.getPropertyValue(n).trim();
+  const L=40,R=10,T=24,B=8;x.font='12px system-ui';x.fillStyle=C('--mu');x.fillText(o.t,L,14);
+  if(D.length<2){x.fillText('Esperando datos…',L,h/2);return}
+  const ys=D.map(q=>q[k]),rf=o.ref||[];let lo=Math.min(...ys,...rf.map(q=>q.y)),hi=Math.max(...ys,...rf.map(q=>q.y));if(hi-lo<1e-6){hi++;lo--}
+  const t0=D[0].ms,t1=D[D.length-1].ms,X=t=>L+(t-t0)/(t1-t0||1)*(w-L-R),Y=v=>h-B-(v-lo)/(hi-lo)*(h-T-B);
+  x.lineWidth=1;for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4;x.strokeStyle=C('--ln');x.beginPath();x.moveTo(L,Y(v));x.lineTo(w-R,Y(v));x.stroke();x.fillStyle=C('--mu');x.fillText(v.toFixed(Math.abs(hi-lo)<10?1:0),2,Y(v)+4)}
+  x.setLineDash([5,4]);x.strokeStyle=C('--wn');x.fillStyle=C('--wn');rf.forEach(q=>{x.beginPath();x.moveTo(L,Y(q.y));x.lineTo(w-R,Y(q.y));x.stroke();x.fillText(q.t,L+4,Y(q.y)-4)});
+  x.strokeStyle=C('--mu');x.setLineDash([2,4]);D.forEach((q,i)=>{if(i&&q.st!==D[i-1].st){x.beginPath();x.moveTo(X(q.ms),T);x.lineTo(X(q.ms),h-B);x.stroke()}});x.setLineDash([]);
+  x.beginPath();D.forEach((q,i)=>i?x.lineTo(X(q.ms),Y(q[k])):x.moveTo(X(q.ms),Y(q[k])));
+  if(o.fill){x.save();x.lineTo(X(t1),Y(lo));x.lineTo(X(t0),Y(lo));x.globalAlpha=.12;x.fillStyle=C('--ac');x.fill();x.restore();x.beginPath();D.forEach((q,i)=>i?x.lineTo(X(q.ms),Y(q[k])):x.moveTo(X(q.ms),Y(q[k])))}
+  x.strokeStyle=C('--ac');x.lineWidth=2;x.stroke();
+  if(hv!==null){const t=t0+hv*(t1-t0);let b=D[0];D.forEach(q=>{if(Math.abs(q.ms-t)<Math.abs(b.ms-t))b=q});
+   x.strokeStyle=C('--ink');x.lineWidth=1;x.beginPath();x.moveTo(X(b.ms),T);x.lineTo(X(b.ms),h-B);x.stroke();
+   x.fillStyle=C('--ink');x.fillText(`T+${((b.ms-t0)/1000).toFixed(1)} s · ${b[k].toFixed(1)}`,Math.min(X(b.ms)+6,w-120),T+12)}}
+document.querySelectorAll('canvas[id^=c]').forEach(c=>{
+  c.onpointermove=e=>{const b=c.getBoundingClientRect();hv=Math.max(0,Math.min(1,(e.clientX-b.left-40)/(b.width-50)));draw()};
+  c.onpointerleave=()=>{hv=null;draw()}});
+function attitude(d){const c=$('at'),x=c.getContext('2d'),s=110;x.clearRect(0,0,s,s);x.save();x.beginPath();x.arc(55,55,53,0,7);x.clip();
+  x.translate(55,55);x.rotate(-d.roll*Math.PI/180);x.translate(0,Math.max(-50,Math.min(50,d.pitch*1.2)));
+  x.fillStyle='#4f8ff0';x.fillRect(-110,-220,220,220);x.fillStyle='#8a6a45';x.fillRect(-110,0,220,220);x.restore();
+  x.strokeStyle='#fff';x.lineWidth=3;x.beginPath();x.moveTo(25,55);x.lineTo(45,55);x.moveTo(65,55);x.lineTo(85,55);x.stroke();
+  x.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--ln');x.lineWidth=2;x.beginPath();x.arc(55,55,53,0,7);x.stroke()}
+function csv(){const k=[...F,'vel','g'],t=[k.join(',')].concat(D.map(d=>k.map(n=>(+d[n]).toFixed(3)).join(','))).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download='telemetria_'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.csv';a.click()}
+async function conectar(){
+  if(!('serial' in navigator)){alert('Web Serial requiere Chrome o Edge en una computadora.');return}
+  try{const p=await navigator.serial.requestPort();await p.open({baudRate:115200});
+    const rd=p.readable.pipeThrough(new TextDecoderStream()).getReader();let b='';
+    for(;;){const {value,done}=await rd.read();if(done)break;b+=value;let i;while((i=b.indexOf('\n'))>=0){ingest(b.slice(0,i).trim());b=b.slice(i+1)}}
+  }catch(e){$('lk').textContent='Error: '+e.message}}
+function sim(){reset();let t=0,s=0,h=0,v=0,st=0,n3=0,tl=0;
+  timer=setInterval(()=>{t+=.2;
+    if(st===0&&t>5)st=1;
+    if(st===1){v=7.5;if(h>=450){st=2;v=0}}else if(st===2){v=Math.max(v-1.6,-32);if(h<=200)st=3}
+    else if(st===3){if(++n3>5)st=4}else if(st===4){v+=(-10-v)*.15;if(h<=0){h=0;v=0;st=5;tl=t}}
+    h=Math.max(0,h+v*.2);const w=st>=3?1:.2,landed=st===5&&t-tl<.3,
+      g=st===2?.05:landed?8:1,fl=(st>=3?1:0)|(st>=4?2:0)|(st===5?4:0)|(st===5&&t-tl>3?8:0),
+      p=1013.25*Math.pow(1-h/44330,5.255)+Math.random()*.05;
+    if(Math.random()>.05)ingest(`$${s},${Math.round(t*1000)},${st},${p.toFixed(2)},${(27-h/150).toFixed(1)},${h.toFixed(2)},0.05,0.03,${g},${(35*w*Math.sin(t*1.3)).toFixed(1)},${(20*w*Math.sin(t*.8)).toFixed(1)},${(t*9%360).toFixed(0)},${fl},${fl&8?6.4:-1},${fl&8?212:-1},${-58-Math.round(h/12+Math.random()*3)},${(9-h/90).toFixed(1)}`);s++},200)}
+setInterval(()=>{const a=tLast?(Date.now()-tLast)/1000:null;$('age').textContent=a===null?'–':a.toFixed(1)+' s';
+  const ok=a!==null&&a<2;$('lk').className='chip'+(ok?' on':'');$('lk').textContent=a===null?'Sin enlace':ok?'Enlace activo':'Señal perdida'},250);
+reset();
+</script></body></html>
