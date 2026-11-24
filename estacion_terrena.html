@@ -5,149 +5,318 @@
 <title>Estación terrena · CanSAT 2026</title>
 <style>
 /* Sin fuentes ni CDN: en el campo puede no haber internet. Claro por defecto (sol), oscuro si el sistema lo pide. */
-:root{--bg:#e9edf3;--pn:#fff;--ink:#0d1b2a;--mu:#56657a;--ln:#d3dae4;--ac:#1f4fe0;--wn:#d97e00;--ok:#12805c;--bd:#c8302b}
-@media(prefers-color-scheme:dark){:root{--bg:#0a1220;--pn:#121d31;--ink:#e8eef8;--mu:#93a3bb;--ln:#233350;--ac:#6c93ff;--wn:#ffb02e;--ok:#35c48f;--bd:#ff6b66}}
+:root{--bg:#e9edf3;--pn:#fff;--ink:#0d1b2a;--mu:#56657a;--ln:#d3dae4;--ac:#1f4fe0;--wn:#b86a00;--ok:#12805c;--bd:#c8302b;--sim:#fff3d6}
+@media(prefers-color-scheme:dark){:root{--bg:#0a1220;--pn:#121d31;--ink:#e8eef8;--mu:#93a3bb;--ln:#233350;--ac:#6c93ff;--wn:#ffb02e;--ok:#35c48f;--bd:#ff6b66;--sim:#3a2a08}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 "Avenir Next","Segoe UI",system-ui,sans-serif}
 .w{max-width:1280px;margin:auto;padding:16px;display:grid;gap:12px}
 .c{background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:12px 14px;min-width:0}
-h1{font-size:19px;margin:0;letter-spacing:-.01em}h2{font-size:13px;margin:0 0 6px;color:var(--mu);font-weight:600}
-header{display:flex;flex-wrap:wrap;gap:8px;align-items:center}header h1{margin-right:auto}
+h1{font-size:20px;margin:0;letter-spacing:-.01em}
+h2{font-size:13px;margin:0 0 6px;color:var(--mu);font-weight:600}
+h2.sec{margin:4px 0 -4px;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+header{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+header .tit{margin-right:auto}
+.sub{margin:2px 0 0;color:var(--mu);font-size:13px}
+.acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;border:1px solid var(--ln);background:var(--pn);font-weight:600;font-size:13px}
-.chip::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--bd)}.chip.on::before{background:var(--ok)}
-button{font:inherit;font-weight:600;color:var(--ink);background:var(--pn);border:1px solid var(--ln);padding:6px 12px;border-radius:8px;cursor:pointer}
-button.p{background:var(--ac);border-color:var(--ac);color:#fff}button:hover{border-color:var(--ac)}
+.chip::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--mu)}
+.chip.on::before{background:var(--ok)}.chip.wait::before,.chip.sim::before{background:var(--wn)}.chip.bad::before{background:var(--bd)}
+.chip.bad{color:var(--bd);border-color:var(--bd)}
+button,summary.btn{font:inherit;font-weight:600;color:var(--ink);background:var(--pn);border:1px solid var(--ln);padding:7px 13px;border-radius:8px;cursor:pointer}
+button.p{background:var(--ac);border-color:var(--ac);color:#fff}
+button:hover:not(:disabled),summary.btn:hover{border-color:var(--ac)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.danger{color:var(--bd)}
 :focus-visible{outline:3px solid var(--ac);outline-offset:2px}
-ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
-ol li{padding:8px 10px;border-radius:8px;background:var(--pn);border:1px solid var(--ln);color:var(--mu);font-size:13px;font-weight:600;border-top:4px solid var(--ln)}
-ol li.done{color:var(--ink);border-top-color:var(--ok)}ol li.now{color:var(--ink);border-top-color:var(--ac);box-shadow:0 0 0 2px var(--ac) inset}
+.mas{position:relative}.mas summary{list-style:none}.mas summary::-webkit-details-marker{display:none}
+.mas>div{position:absolute;right:0;top:calc(100% + 6px);z-index:2;display:grid;gap:6px;padding:8px;min-width:230px;background:var(--pn);border:1px solid var(--ln);border-radius:10px;box-shadow:0 6px 20px #0003}
+.mas>div small{color:var(--mu);font-size:12px;padding:0 2px}
+.simb{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;background:var(--sim);border:2px solid var(--wn);font-weight:600}
+.guia ol{margin:6px 0 0;padding-left:20px}.guia li{margin:2px 0}
+#ph{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+#ph li{padding:8px 10px;border-radius:8px;background:var(--pn);border:1px solid var(--ln);color:var(--mu);font-size:13px;font-weight:600;border-top:4px solid var(--ln)}
+#ph li.done{color:var(--ink);border-top-color:var(--ok)}#ph li.now{color:var(--ink);border-top-color:var(--ac);box-shadow:0 0 0 2px var(--ac) inset}
 .top{display:grid;grid-template-columns:minmax(0,2fr) minmax(250px,1fr);gap:12px}
 .hero{display:grid;gap:12px;align-content:start}
-.big{font-size:clamp(46px,6.5vw,80px);line-height:1;font-weight:650;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.big{font-size:clamp(44px,6vw,74px);line-height:1;font-weight:650;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
 .big small{font-size:.3em;color:var(--mu);font-weight:500;letter-spacing:0;margin-left:4px}
-.row{display:flex;gap:18px;flex-wrap:wrap}.row b{font-size:26px;font-variant-numeric:tabular-nums;display:block;line-height:1.1}
-.kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.na{color:var(--mu)!important;font-weight:500!important}
+.big .na{font-size:26px;letter-spacing:0}.big .na+small{display:none}
+.note{display:block;margin-top:6px;color:var(--mu);font-size:12px}
+.note.bad{color:var(--bd);font-weight:600}.note.ok{color:var(--ok);font-weight:600}
+.kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
 .kp b{font-size:24px;font-variant-numeric:tabular-nums;display:block}
-.kp small,.row small{color:var(--mu)}
-.fl{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.fl span{font-size:12px;padding:2px 8px;border-radius:6px;border:1px solid var(--ln);color:var(--mu)}.fl span.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.kp small{color:var(--mu)}
 .ch{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
-canvas{width:100%;display:block;touch-action:pan-y}.cv{height:170px}#ca{height:300px}
+canvas{width:100%;display:block;touch-action:pan-y}.cv{height:180px}#ca{height:310px}
 .bar{height:8px;border-radius:5px;background:var(--ln);overflow:hidden;margin:6px 0}.bar i{display:block;height:100%;width:0;background:var(--ac)}.bar.ok i{background:var(--ok)}
 .bt{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
-ul{margin:0;padding:0;list-style:none;max-height:150px;overflow:auto;font-size:13px}ul li{padding:3px 0;border-bottom:1px solid var(--ln)}ul li b{font-variant-numeric:tabular-nums;color:var(--ac)}
-pre{margin:6px 0 0;height:100px;overflow:auto;font-size:12px;color:var(--mu)}
-@media(max-width:800px){.top,.bt{grid-template-columns:1fr}ol{grid-template-columns:repeat(3,1fr)}}
+#ev{margin:0;padding:0;list-style:none;max-height:170px;overflow:auto;font-size:13px}#ev li{padding:3px 0;border-bottom:1px solid var(--ln)}#ev li b{font-variant-numeric:tabular-nums;color:var(--ac);margin-right:6px}
+pre{margin:6px 0 0;height:110px;overflow:auto;font-size:12px;color:var(--mu)}
+[hidden]{display:none!important}
+@media(max-width:800px){.top,.bt{grid-template-columns:1fr}#ph{grid-template-columns:repeat(2,1fr)}.mas>div{left:0;right:auto}}
 @media(prefers-reduced-motion:no-preference){.bar i{transition:width .2s}}
 </style></head><body><main class="w">
-<header><h1>Estación terrena · CanSAT 2026</h1>
- <span class="chip" id="lk" role="status" aria-live="polite">Sin enlace</span>
- <button class="p" onclick="conectar()">Conectar USB</button>
- <button onclick="cero()">Fijar altura 0</button><button onclick="csv()">Descargar CSV</button>
- <button onclick="sim()">Simular vuelo</button><button onclick="reset()">Reiniciar</button></header>
-<ol id="ph" aria-label="Fases de la misión"></ol>
+<header>
+ <div class="tit"><h1>Estación terrena · CanSAT 2026</h1>
+  <p class="sub">Módulo del huevo con autogiro · lanzamiento a 20–25 m (límite 30 m). El compartimento en caída libre no transmite datos.</p></div>
+ <span class="chip" id="lk" role="status" aria-live="polite">Sin conexión</span>
+ <div class="acts">
+  <button class="p" id="bc" onclick="conectar()">Conectar receptor USB</button>
+  <button id="b0" onclick="cero()" title="El cero se toma solo al empezar. Púlsalo únicamente para volver a tomarlo con el CanSAT en el suelo" disabled>Fijar altura 0</button>
+  <button id="bx" onclick="csv()" disabled>Descargar CSV</button>
+  <details class="mas"><summary class="btn">Más ▾</summary><div>
+   <button id="bs" onclick="simular()">Simular vuelo de práctica</button>
+   <small>Genera datos inventados para practicar. No se puede usar con el receptor conectado.</small>
+   <button id="br" class="danger" onclick="borrar()">Borrar datos</button>
+  </div></details>
+ </div>
+</header>
+<div class="simb" id="simb" role="alert" hidden><span id="simT"></span><button id="simB" onclick="borrar()">Borrar simulación</button></div>
+<div class="c guia" id="guia"><h2>Cómo usar la estación</h2><ol>
+ <li>Conecta el receptor por USB y pulsa <b>Conectar receptor USB</b> (Chrome o Edge en computadora).</li>
+ <li>Enciende el CanSAT <b>en el suelo</b> y espera a que llegue el primer segundo de paquetes: ahí la estación toma el cero de altura sola.</li>
+ <li>Sube cargándolo a 20–25 m (nunca más de 30 m) y suéltalo.</li>
+ <li>Después del aterrizaje, pulsa <b>Descargar CSV</b> antes de cerrar la página.</li></ol>
+ <span class="note">Si un sensor todavía no está integrado en el CanSAT, su tarjeta dice “sin dato”: nada se rellena con valores inventados.</span></div>
+<ol id="ph" aria-label="Fases de la misión, calculadas con la altura" title="Fase calculada en la estación con la altura: sube, se suelta y vuelve a 0 m"></ol>
 <section class="top">
  <div class="c"><canvas id="ca" aria-label="Altura contra tiempo"></canvas></div>
  <div class="hero">
-  <div class="c"><h2>Altura sobre el suelo</h2><div class="big"><span id="alt">–</span><small>m</small></div></div>
-  <div class="c"><h2>Velocidad vertical (negativa = cayendo)</h2><div class="big"><span id="vel">–</span><small>m/s</small></div></div>
-  <div class="c"><div class="row"><div><small>Altura máxima</small><b id="max">–</b></div><div><small>Fase</small><b id="fase">–</b></div></div></div>
+  <div class="c"><h2 id="altH">Altura sobre el suelo</h2><div class="big"><span id="alt">–</span><small>m</small></div><span class="note" id="ceroN"></span></div>
+  <div class="c"><h2>Velocidad vertical · calculada (negativa = bajando)</h2><div class="big"><span id="vel">–</span><small>m/s</small></div></div>
+  <div class="c"><h2>Altura máxima · calculada</h2><b id="max" style="font-size:26px;font-variant-numeric:tabular-nums">–</b><span class="note" id="maxN"></span></div>
  </div></section>
+<h2 class="sec">Sensores del CanSAT</h2>
 <section class="kp">
- <div class="c"><small>Temperatura °C</small><b id="temp">–</b></div>
- <div class="c"><small>Presión hPa</small><b id="pres">–</b></div>
- <div class="c"><small>Aceleración (g)</small><b id="acc">–</b></div>
- <div class="c"><small>RSSI dBm · SNR dB</small><b id="rssi">–</b></div>
- <div class="c"><small>Paquetes · perdidos</small><b id="pk">–</b></div>
+ <div class="c"><small>Temperatura</small><b id="temp">–</b></div>
+ <div class="c"><small>Presión</small><b id="pres">–</b></div>
+ <div class="c"><small>Aceleración total · calculada</small><b id="acc">–</b></div>
+ <div class="c"><small>Orientación</small><b id="ori" style="font-size:17px">–</b></div>
+</section>
+<h2 class="sec">Enlace de radio</h2>
+<section class="kp">
+ <div class="c"><small>Señal (RSSI · SNR)</small><b id="rssi">–</b></div>
+ <div class="c"><small>Paquetes recibidos · perdidos</small><b id="pk">–</b><span class="note" id="pkN"></span></div>
  <div class="c"><small>Último paquete hace</small><b id="age">–</b></div>
- <div class="c"><h2>Orientación</h2><canvas id="at" width="110" height="110" style="width:110px;margin:auto" aria-label="Horizonte artificial"></canvas><small id="rp"></small></div></section>
+</section>
 <section class="ch">
  <div class="c"><canvas class="cv" id="c1" aria-label="Velocidad vertical"></canvas></div>
  <div class="c"><canvas class="cv" id="c2" aria-label="Aceleración total"></canvas></div>
  <div class="c"><canvas class="cv" id="c3" aria-label="Intensidad de señal"></canvas></div></section>
 <section class="bt">
- <div class="c"><h2>Aterrizaje: transmisión posterior (requisito ≥ 10 s)</h2><div class="bar" id="lb"><i></i></div><b id="lt">Aún no aterriza</b>
-  <div class="fl" id="fl"></div><p id="sec" style="margin:8px 0 0;color:var(--mu)">Carga secundaria: sin dato</p></div>
- <div class="c"><h2>Eventos</h2><ul id="ev"><li>Sin eventos</li></ul></div></section>
-<details class="c"><summary>Paquetes crudos</summary><pre id="log"></pre></details>
+ <div class="c"><h2>Transmisión después de aterrizar (requisito ≥ 10 s)</h2><div class="bar" id="lb"><i></i></div><b id="lt">Aún no aterriza</b><span class="note" id="ltN"></span>
+  </div>
+ <div class="c"><h2>Eventos</h2><ul id="ev"></ul></div></section>
+<details class="c"><summary>Líneas recibidas por USB (crudas)</summary><pre id="log"></pre></details>
 </main>
 <script>
 const $=id=>document.getElementById(id);
+// Contrato de TELEMETRIA.md (17 campos). sd y sb están reservados: el CanSAT los envía en -1.
 const F=['seq','ms','st','pres','temp','alt','ax','ay','az','roll','pitch','yaw','flags','sd','sb','rssi','snr'];
-const PH=['Preparación','Ascenso','Caída libre','Separación','Autogiro','Aterrizaje'];
-const FL=['Separación','Autogiro','Aterrizado','Carga 2 hallada'];
-let D,off,maxA,lost,tLast,tL,hv=null,timer,pend=false;
-$('ph').innerHTML=PH.map(p=>`<li>${p}</li>`).join('');$('fl').innerHTML=FL.map(f=>`<span>${f}</span>`).join('');
-function reset(){clearInterval(timer);D=[];off=0;maxA=0;lost=0;tLast=0;tL=null;$('ev').innerHTML='<li>Sin eventos</li>';$('log').textContent='';draw()}
-function ingest(line){
-  const L=$('log');L.textContent+=line+'\n';if(L.textContent.length>5000)L.textContent=L.textContent.slice(-3500);L.scrollTop=1e9;
-  if(line[0]!=='$')return;const v=line.slice(1).split(',').map(Number);
-  if(v.length!==F.length||v.some(isNaN))return;
-  const d={};F.forEach((k,i)=>d[k]=v[i]);d.alt-=off;
-  const q=D[D.length-1];d.vel=0;
-  if(q){if(d.seq>q.seq+1)lost+=d.seq-q.seq-1;const dt=(d.ms-q.ms)/1000;d.vel=dt>0?q.vel*.6+.4*(d.alt-q.alt)/dt:q.vel;
-    if(d.st!==q.st)evento(d,'Fase: '+PH[d.st])}else evento(d,'Primer paquete');
-  d.g=Math.hypot(d.ax,d.ay,d.az);maxA=Math.max(maxA,d.alt);
-  if(d.st===5&&tL===null)tL=d.ms;D.push(d);tLast=Date.now();draw()}
-function evento(d,t){const u=$('ev');if(u.firstChild&&u.firstChild.textContent==='Sin eventos')u.innerHTML='';
-  u.insertAdjacentHTML('afterbegin',`<li><b>T+${((d.ms-(D[0]?D[0].ms:d.ms))/1000).toFixed(1)} s</b> ${t}</li>`)}
-function cero(){if(D.length){const a=D[D.length-1].alt;off+=a;D.forEach(d=>d.alt-=a);maxA=0;draw()}}
+// Fases calculadas en tierra con la altura (el firmware aún no calcula st).
+const PH=['En tierra','Subida','Descenso con autogiro','Aterrizado'];
+const NUM=/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/,U32=2**32;
+const LIM={max:30,lanzar:[20,25],desc:[8,12],post:10};
+// Umbrales de fase: POR CONFIRMAR con una prueba real del barómetro.
+const FASE={suelo:1,sube:.3,baja:-2,caida:1.5}; // m, m/s, m/s, m bajo la altura máxima
+let D,EV,off,offTipo,base,maxA,lost,dup,late,bad,tLast,tL,gapL,mode='none',err='',hv=null,timer=null,pend=false,reader=null,lkTxt='';
+const has=x=>x!=null&&x!==-1; // -1 = sin dato (TELEMETRIA.md)
+const ent=(x,m)=>Number.isInteger(x)&&x>=0&&x<=m;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+$('ph').innerHTML=PH.map(p=>`<li>${p}</li>`).join('');
+// Solo avanza: 0 → 1 al subir, 1 → 2 al soltarlo (cae rápido y ya bajó de la altura máxima), 2 → 3 al volver a 0 m.
+function faseDe(d,q){
+  let f=q&&q.ses===d.ses?q.f:0;
+  if(off==null||d.h==null)return f;
+  if(f===0&&d.h>FASE.suelo&&d.vel!=null&&d.vel>FASE.sube)f=1;
+  else if(f===1&&d.vel!=null&&d.vel<FASE.baja&&d.h<maxA-FASE.caida)f=2;
+  else if(f===2&&d.h<FASE.suelo)f=3;
+  return f}
+
+function reset(){clearInterval(timer);timer=null;D=[];EV=[];off=null;offTipo=null;base=[];maxA=null;lost=dup=late=bad=0;tLast=0;tL=null;gapL=0;err='';$('log').textContent='';draw()}
+function evento(d,m){
+  const h=new Date();
+  EV.push({t:d?`T+${d.t.toFixed(1)} s`:h.toTimeString().slice(0,8),m});if(EV.length>200)EV.shift();draw()}
+function log(line){const L=$('log');L.textContent+=line+'\n';if(L.textContent.length>8000)L.textContent=L.textContent.slice(-6000);L.scrollTop=1e9}
+
+function ingest(line,src='usb'){
+  log(line);
+  if(line[0]!=='$'){if(/^#\s*ERROR/.test(line))evento(null,'Receptor: '+line.replace(/^#\s*/,''));return}
+  const tk=line.slice(1).split(',');
+  if(tk.length!==F.length||!tk.every(s=>NUM.test(s))){bad++;draw();return}
+  const v=tk.map(Number);if(!v.every(Number.isFinite)){bad++;draw();return}
+  const d={};F.forEach((k,i)=>d[k]=v[i]);
+  if(!ent(d.seq,U32-1)||!ent(d.ms,U32-1)||!ent(d.st,3)||!ent(d.flags,3)){bad++;draw();return}
+  const q=D[D.length-1],now=Date.now();
+  d.src=src;d.vel=null;
+  if(!q){d.t=0;d.ses=1;evento(d,'Primer paquete recibido')}
+  else{
+    const ds=(d.seq-q.seq+U32)%U32,dms=(d.ms-q.ms+U32)%U32;
+    // Ambos contadores retroceden y hubo pausa (el arranque tarda > 1 s): el CanSAT se reinició.
+    const reinicio=d.seq<q.seq&&d.ms<q.ms&&(now-tLast>=800||q.seq-d.seq>10);
+    if(reinicio){d.t=q.t+Math.max(.2,(now-tLast)/1000);d.ses=q.ses+1;tL=null;gapL=0;evento(d,'El CanSAT se reinició: contadores en cero')}
+    else{
+      if(ds===0){dup++;draw();return}
+      if(ds>=U32/2||dms===0||dms>=U32/2){late++;draw();return}
+      lost+=ds-1;d.t=q.t+dms/1000;d.ses=q.ses;
+    }
+  }
+  // El CanSAT arranca en el suelo: el promedio de las 5 primeras alturas es el cero.
+  if(off==null&&has(d.alt)&&d.ses===1){base.push(d.alt);
+    if(base.length===5){fijarCero(base.reduce((s,x)=>s+x,0)/5,'auto');evento(d,`Cero automático: el suelo marcaba ${off.toFixed(1)} m`)}}
+  d.h=has(d.alt)?d.alt-(off??0):null;
+  if(q&&q.ses===d.ses&&q.h!=null&&d.h!=null){const raw=(d.h-q.h)/(d.t-q.t);d.vel=q.vel==null?raw:q.vel*.6+raw*.4}
+  d.g=has(d.ax)&&has(d.ay)&&has(d.az)?Math.hypot(d.ax,d.ay,d.az):null;
+  if(d.h!=null)maxA=maxA==null?d.h:Math.max(maxA,d.h);
+  d.f=faseDe(d,q);
+  if(q&&q.ses===d.ses&&d.f!==q.f)evento(d,'Fase: '+PH[d.f]);
+  if(d.f===3){if(tL===null)tL=d.t;else if(q&&q.f===3)gapL=Math.max(gapL,d.t-q.t)}
+  D.push(d);tLast=now;draw()}
+
+function fijarCero(v,tipo){
+  off=v;offTipo=tipo;maxA=null;
+  D.forEach(d=>{d.h=has(d.alt)?d.alt-off:null;if(d.h!=null)maxA=maxA==null?d.h:Math.max(maxA,d.h)})}
+function cero(){
+  const a=[...D].reverse().find(d=>has(d.alt));if(!a)return;
+  fijarCero(a.alt,'mano');evento(a,`Altura 0 fijada a mano (el CanSAT marcaba ${off.toFixed(1)} m)`)}
+
 function draw(){if(!pend){pend=true;requestAnimationFrame(()=>{pend=false;paint()})}}
+function setv(id,v,n=1,u=''){const e=$(id);if(v==null){e.textContent='sin dato';e.className='na'}else{e.textContent=v.toFixed(n)+u;e.className=''}}
 function paint(){
-  const d=D[D.length-1],f=(x,n=1)=>x.toFixed(n);
-  document.querySelectorAll('#ph li').forEach((li,i)=>li.className=d?(i<d.st?'done':i===d.st?'now':''):'');
-  if(d){$('alt').textContent=f(d.alt);$('vel').textContent=f(d.vel);$('max').textContent=f(maxA)+' m';$('fase').textContent=PH[d.st];
-   $('temp').textContent=f(d.temp);$('pres').textContent=f(d.pres);$('acc').textContent=f(d.g,2);
-  $('rssi').textContent=d.rssi+' · '+f(d.snr);$('pk').textContent=D.length+' · '+lost;
-   $('rp').textContent=`Roll ${f(d.roll,0)}° · Pitch ${f(d.pitch,0)}°`;
-   document.querySelectorAll('#fl span').forEach((s,i)=>s.className=(d.flags>>i)&1?'on':'');
-   const t=tL===null?0:Math.min(10,(d.ms-tL)/1000);$('lb').firstChild.style.width=t*10+'%';$('lb').className='bar'+(t>=10?' ok':'');
-   $('lt').textContent=tL===null?'Aún no aterriza':t>=10?'✓ Cumplido: más de 10 s transmitiendo':`${f(t)} s de 10 s`;
-   $('sec').textContent=d.sd>=0?`Carga secundaria: ${f(d.sd)} m a ${f(d.sb,0)}°`:'Carga secundaria: sin dato';attitude(d)}
-  chart('ca','alt',{t:'Altura (m)',fill:1,ref:[{y:200,t:'Autogiro 200 m'},{y:450,t:'Liberación 450 m'}]});
-  chart('c1','vel',{t:'Velocidad vertical (m/s)',ref:[{y:-8,t:''},{y:-12,t:'Objetivo 8–12'}]});
-  chart('c2','g',{t:'Aceleración total (g)'});chart('c3','rssi',{t:'RSSI (dBm)'})}
-function chart(id,k,o){
-  const c=$(id),r=devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;c.width=w*r;c.height=h*r;
-  const x=c.getContext('2d');x.scale(r,r);const cs=getComputedStyle(document.documentElement),C=n=>cs.getPropertyValue(n).trim();
-  const L=40,R=10,T=24,B=8;x.font='12px system-ui';x.fillStyle=C('--mu');x.fillText(o.t,L,14);
-  if(D.length<2){x.fillText('Esperando datos…',L,h/2);return}
-  const ys=D.map(q=>q[k]),rf=o.ref||[];let lo=Math.min(...ys,...rf.map(q=>q.y)),hi=Math.max(...ys,...rf.map(q=>q.y));if(hi-lo<1e-6){hi++;lo--}
-  const t0=D[0].ms,t1=D[D.length-1].ms,X=t=>L+(t-t0)/(t1-t0||1)*(w-L-R),Y=v=>h-B-(v-lo)/(hi-lo)*(h-T-B);
-  x.lineWidth=1;for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4;x.strokeStyle=C('--ln');x.beginPath();x.moveTo(L,Y(v));x.lineTo(w-R,Y(v));x.stroke();x.fillStyle=C('--mu');x.fillText(v.toFixed(Math.abs(hi-lo)<10?1:0),2,Y(v)+4)}
-  x.setLineDash([5,4]);x.strokeStyle=C('--wn');x.fillStyle=C('--wn');rf.forEach(q=>{x.beginPath();x.moveTo(L,Y(q.y));x.lineTo(w-R,Y(q.y));x.stroke();x.fillText(q.t,L+4,Y(q.y)-4)});
-  x.strokeStyle=C('--mu');x.setLineDash([2,4]);D.forEach((q,i)=>{if(i&&q.st!==D[i-1].st){x.beginPath();x.moveTo(X(q.ms),T);x.lineTo(X(q.ms),h-B);x.stroke()}});x.setLineDash([]);
-  x.beginPath();D.forEach((q,i)=>i?x.lineTo(X(q.ms),Y(q[k])):x.moveTo(X(q.ms),Y(q[k])));
-  if(o.fill){x.save();x.lineTo(X(t1),Y(lo));x.lineTo(X(t0),Y(lo));x.globalAlpha=.12;x.fillStyle=C('--ac');x.fill();x.restore();x.beginPath();D.forEach((q,i)=>i?x.lineTo(X(q.ms),Y(q[k])):x.moveTo(X(q.ms),Y(q[k])))}
+  const d=D[D.length-1],val=k=>d&&has(d[k])?d[k]:null,sim=mode==='sim'||D.some(q=>q.src==='sim');
+  document.querySelectorAll('#ph li').forEach((li,i)=>li.className=d?(i<d.f?'done':i===d.f?'now':''):'');
+  $('simb').hidden=!sim;
+  $('simT').textContent=mode==='sim'?'⚠ SIMULACIÓN EN CURSO: datos inventados, no vienen del CanSAT.':'⚠ SIMULACIÓN TERMINADA: lo que ves son datos inventados. Bórralos o conecta el receptor para empezar.';
+  $('simB').hidden=mode==='sim';$('guia').hidden=D.length>0||mode!=='none';
+  if(d){
+    setv('alt',d.h);setv('vel',d.vel);setv('temp',val('temp'),1,' °C');setv('pres',val('pres'),1,' hPa');setv('acc',d.g,2,' g');
+    const o=['roll','pitch','yaw'].map(k=>val(k));
+    $('ori').textContent=o.every(x=>x==null)?'sin dato':['Roll','Pitch','Yaw'].map((n,i)=>`${n} ${o[i]==null?'–':o[i].toFixed(0)+'°'}`).join(' · ');
+    $('ori').className=o.every(x=>x==null)?'na':'';
+    $('rssi').textContent=`${d.rssi} dBm · ${d.snr.toFixed(1)} dB`;$('rssi').className='';
+  }else ['alt','vel','temp','pres','acc','ori','rssi'].forEach(id=>{$(id).textContent='–';$(id).className=''});
+  // Sin cero, alt es la altura barométrica (p. ej. ~430 m): no se compara con 20–25 m ni con el límite de 30 m.
+  const sc=off==null,cn=$('ceroN');
+  $('altH').textContent=sc?'Altura barométrica (sin cero)':'Altura sobre el suelo';
+  if(!sc){cn.textContent=offTipo==='auto'?`Cero automático: el suelo marcaba ${off.toFixed(1)} m al encender.`:`Cero fijado a mano: el CanSAT marcaba ${off.toFixed(1)} m.`;cn.className='note'}
+  else if(d&&!D.some(q=>has(q.alt))){cn.textContent='Sin dato de altura: el CanSAT todavía no envía el barómetro.';cn.className='note'}
+  else if(d&&d.ses>1){cn.textContent='⚠ No se tomó el cero en el suelo (la captura empezó tarde). Pulsa “Fijar altura 0” cuando el CanSAT esté en el suelo.';cn.className='note bad'}
+  else{cn.textContent=d?'Tomando el cero con los primeros paquetes en el suelo…':'El cero se toma solo con los primeros paquetes, con el CanSAT en el suelo.';cn.className='note'}
+  if(maxA==null){$('max').textContent=d?'sin dato':'–';$('max').className=d?'na':'';$('maxN').textContent='';$('maxN').className='note'}
+  else{
+    $('max').textContent=maxA.toFixed(1)+' m';$('max').className='';
+    const [a,b]=LIM.lanzar,n=$('maxN');
+    if(sc){n.textContent=`Fija la altura 0 al aterrizar para compararla con el límite de ${LIM.max} m`;n.className='note'}
+    else if(maxA>LIM.max){n.textContent=`⚠ Superó el límite de ${LIM.max} m`;n.className='note bad'}
+    else if(maxA>=a&&maxA<=b){n.textContent=`Dentro del rango previsto (${a}–${b} m)`;n.className='note ok'}
+    else{n.textContent=`Rango previsto ${a}–${b} m · límite ${LIM.max} m`;n.className='note'}}
+  $('pk').textContent=D.length?`${D.length} · ${lost}`:'–';
+  const x=[],pl=(n,a,b)=>`${n} ${n===1?a:b}`;
+  if(dup)x.push(pl(dup,'duplicado','duplicados'));if(late)x.push(pl(late,'fuera de orden','fuera de orden'));if(bad)x.push(pl(bad,'línea inválida','líneas inválidas'));
+  $('pkN').textContent=x.length?'Descartados: '+x.join(' · '):'';
+  const t=d&&tL!==null?Math.min(LIM.post,d.t-tL):0,ok=t>=LIM.post;
+  $('lb').firstChild.style.width=t/LIM.post*100+'%';$('lb').className='bar'+(ok?' ok':'');
+  $('lt').textContent=tL===null?'Aún no aterriza':ok?`✓ Cumplido: ${LIM.post} s transmitiendo después de aterrizar`:`${t.toFixed(1)} s de ${LIM.post} s`;
+  $('ltN').textContent=tL!==null&&gapL>1?`⚠ Hubo un hueco de ${gapL.toFixed(1)} s sin paquetes después de aterrizar.`:'';$('ltN').className=gapL>1?'note bad':'note';
+  $('ev').innerHTML=EV.length?EV.slice().reverse().map(e=>`<li><b>${e.t}</b>${esc(e.m)}</li>`).join(''):'<li>Sin eventos</li>';
+  ui();
+  chart('ca',q=>q.h,sc?{t:'Altura barométrica (m) · sin cero fijado'}:{t:'Altura sobre el suelo (m)',band:{a:LIM.lanzar[0],b:LIM.lanzar[1],t:'Lanzamiento previsto 20–25 m'},ref:[{y:LIM.max,t:'Límite 30 m',c:'--bd'}]});
+  chart('c1',q=>q.vel,{t:'Velocidad vertical (m/s) · calculada',band:{a:-LIM.desc[1],b:-LIM.desc[0],t:'Descenso 8–12 m/s'}});
+  chart('c2',q=>q.g,{t:'Aceleración total (g) · calculada'});
+  chart('c3',q=>q.rssi,{t:'Señal RSSI (dBm)'})}
+function ui(){
+  const usb=mode==='usb',sim=mode==='sim';
+  $('bc').textContent=usb?'Desconectar receptor':'Conectar receptor USB';$('bc').className=usb?'':'p';
+  $('bs').textContent=sim?'Detener simulación':'Simular vuelo de práctica';$('bs').disabled=usb;
+  $('b0').disabled=!D.some(d=>has(d.alt));$('bx').disabled=!D.length;$('br').disabled=!D.length&&!sim}
+
+function chart(id,get,o){
+  const c=$(id),r=devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;if(!w)return;
+  c.width=w*r;c.height=h*r;const x=c.getContext('2d');x.scale(r,r);
+  const cs=getComputedStyle(document.documentElement),C=n=>cs.getPropertyValue(n).trim();
+  const L=44,R=12,T=26,B=22;x.font='12px system-ui';x.fillStyle=C('--mu');x.fillText(o.t,L,14);
+  const st=Math.max(1,Math.ceil(D.length/1500)),P=D.filter((q,i)=>i%st===0||i===D.length-1),ys=P.map(get).filter(v=>v!=null);
+  if(D.length<2||ys.length<2){x.fillText(D.length<2?'Esperando datos…':'Sin dato de este sensor',L,h/2);return}
+  const rf=o.ref||[],bd=o.band,ex=[...rf.map(q=>q.y),...(bd?[bd.a,bd.b]:[])];
+  let lo=Math.min(...ys,...ex),hi=Math.max(...ys,...ex);if(hi-lo<1e-6){hi++;lo--}const pd=(hi-lo)*.05;lo-=pd;hi+=pd;
+  const t0=P[0].t,t1=P[P.length-1].t,X=t=>L+(t-t0)/(t1-t0||1)*(w-L-R),Y=v=>h-B-(v-lo)/(hi-lo)*(h-T-B);
+  x.lineWidth=1;
+  for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4;x.strokeStyle=C('--ln');x.beginPath();x.moveTo(L,Y(v));x.lineTo(w-R,Y(v));x.stroke();x.fillStyle=C('--mu');x.fillText(v.toFixed(Math.abs(hi-lo)<10?1:0),2,Y(v)+4)}
+  for(let i=0;i<=4;i++){const t=t0+(t1-t0)*i/4,s=`${t.toFixed(t1-t0<10?1:0)} s`;x.fillText(s,Math.min(Math.max(L,X(t)-x.measureText(s).width/2),w-R-x.measureText(s).width),h-6)}
+  if(bd){x.save();x.globalAlpha=.14;x.fillStyle=C('--ok');x.fillRect(L,Y(bd.b),w-L-R,Y(bd.a)-Y(bd.b));x.restore();x.fillStyle=C('--ok');x.fillText(bd.t,w-R-x.measureText(bd.t).width-4,Y(bd.b)-4)}
+  x.setLineDash([5,4]);rf.forEach(q=>{x.strokeStyle=x.fillStyle=C(q.c||'--wn');x.beginPath();x.moveTo(L,Y(q.y));x.lineTo(w-R,Y(q.y));x.stroke();x.fillText(q.t,L+4,Y(q.y)-4)});
+  x.strokeStyle=C('--mu');x.setLineDash([2,4]);P.forEach((q,i)=>{if(i&&q.f!==P[i-1].f){x.beginPath();x.moveTo(X(q.t),T);x.lineTo(X(q.t),h-B);x.stroke()}});x.setLineDash([]);
+  x.beginPath();let pen=null;P.forEach(q=>{const v=get(q);if(v==null){pen=null;return}if(pen===q.ses)x.lineTo(X(q.t),Y(v));else x.moveTo(X(q.t),Y(v));pen=q.ses});
   x.strokeStyle=C('--ac');x.lineWidth=2;x.stroke();
-  if(hv!==null){const t=t0+hv*(t1-t0);let b=D[0];D.forEach(q=>{if(Math.abs(q.ms-t)<Math.abs(b.ms-t))b=q});
-   x.strokeStyle=C('--ink');x.lineWidth=1;x.beginPath();x.moveTo(X(b.ms),T);x.lineTo(X(b.ms),h-B);x.stroke();
-   x.fillStyle=C('--ink');x.fillText(`T+${((b.ms-t0)/1000).toFixed(1)} s · ${b[k].toFixed(1)}`,Math.min(X(b.ms)+6,w-120),T+12)}}
-document.querySelectorAll('canvas[id^=c]').forEach(c=>{
-  c.onpointermove=e=>{const b=c.getBoundingClientRect();hv=Math.max(0,Math.min(1,(e.clientX-b.left-40)/(b.width-50)));draw()};
+  if(hv!==null){const t=t0+hv*(t1-t0);let b=null;P.forEach(q=>{if(get(q)!=null&&(!b||Math.abs(q.t-t)<Math.abs(b.t-t)))b=q});
+   if(b){x.strokeStyle=x.fillStyle=C('--ink');x.lineWidth=1;x.beginPath();x.moveTo(X(b.t),T);x.lineTo(X(b.t),h-B);x.stroke();
+    x.fillText(`T+${b.t.toFixed(1)} s · ${get(b).toFixed(1)}`,Math.min(X(b.t)+6,w-130),T+12)}}}
+document.querySelectorAll('canvas').forEach(c=>{
+  c.onpointermove=e=>{const b=c.getBoundingClientRect();hv=Math.max(0,Math.min(1,(e.clientX-b.left-44)/(b.width-56)));draw()};
   c.onpointerleave=()=>{hv=null;draw()}});
-function attitude(d){const c=$('at'),x=c.getContext('2d'),s=110;x.clearRect(0,0,s,s);x.save();x.beginPath();x.arc(55,55,53,0,7);x.clip();
-  x.translate(55,55);x.rotate(-d.roll*Math.PI/180);x.translate(0,Math.max(-50,Math.min(50,d.pitch*1.2)));
-  x.fillStyle='#4f8ff0';x.fillRect(-110,-220,220,220);x.fillStyle='#8a6a45';x.fillRect(-110,0,220,220);x.restore();
-  x.strokeStyle='#fff';x.lineWidth=3;x.beginPath();x.moveTo(25,55);x.lineTo(45,55);x.moveTo(65,55);x.lineTo(85,55);x.stroke();
-  x.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--ln');x.lineWidth=2;x.beginPath();x.arc(55,55,53,0,7);x.stroke()}
-function csv(){const k=[...F,'vel','g'],t=[k.join(',')].concat(D.map(d=>k.map(n=>(+d[n]).toFixed(3)).join(','))).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download='telemetria_'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.csv';a.click()}
+
+function csv(){
+  if(!D.length)return;
+  const sim=D.some(d=>d.src==='sim'),n=v=>v==null?'':(+v).toFixed(3);
+  const k=['origen','sesion','t_s',...F,'cero_m','alt_rel_m','fase_calc','vel_calc_ms','g_calc'];
+  const rows=D.map(d=>[d.src==='sim'?'SIMULADO':'receptor',d.ses,n(d.t),...F.map(f=>d[f]),n(off),n(d.h),PH[d.f],n(d.vel),n(d.g)].join(','));
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([[k.join(','),...rows].join('\n')],{type:'text/csv'}));
+  a.download=(sim?'SIMULADO_':'')+'telemetria_'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.csv';a.click()}
+
+function borrar(){
+  if(D.some(d=>d.src!=='sim')&&!confirm('¿Borrar todos los datos recibidos? Descarga antes el CSV si los vas a necesitar.'))return;
+  if(mode==='sim')mode='none';reset();estado()}
+
 async function conectar(){
-  if(!('serial' in navigator)){alert('Web Serial requiere Chrome o Edge en una computadora.');return}
-  try{const p=await navigator.serial.requestPort();await p.open({baudRate:115200});
-    const rd=p.readable.pipeThrough(new TextDecoderStream()).getReader();let b='';
-    for(;;){const {value,done}=await rd.read();if(done)break;b+=value;let i;while((i=b.indexOf('\n'))>=0){ingest(b.slice(0,i).trim());b=b.slice(i+1)}}
-  }catch(e){$('lk').textContent='Error: '+e.message}}
-function sim(){reset();let t=0,s=0,h=0,v=0,st=0,n3=0,tl=0;
+  if(mode==='usb'){if(reader)reader.cancel();return}
+  err='';
+  if(!('serial' in navigator)){err='Este navegador no tiene Web Serial: usa Chrome o Edge en computadora.';estado();return}
+  if(mode==='sim'){clearInterval(timer);mode='none'}
+  let port;
+  try{port=await navigator.serial.requestPort();await port.open({baudRate:115200})}
+  catch(e){if(e.name!=='NotFoundError')err='No se pudo abrir el puerto: '+e.message;estado();return}
+  if(D.some(d=>d.src==='sim'))reset(); // nunca mezclar práctica con datos reales
+  mode='usb';err='';tLast=0;evento(null,'Receptor conectado por USB');estado();
+  const dec=new TextDecoderStream(),closed=port.readable.pipeTo(dec.writable).catch(()=>{});
+  reader=dec.readable.getReader();let b='';
+  try{for(;;){const {value,done}=await reader.read();if(done)break;b+=value;let i;
+    while((i=b.indexOf('\n'))>=0){const l=b.slice(0,i).trim();b=b.slice(i+1);if(l)ingest(l,'usb')}
+    if(b.length>4096)b=''}}
+  catch(e){err='Se perdió la conexión con el receptor: '+e.message}
+  finally{try{reader.releaseLock()}catch(e){}await closed;try{await port.close()}catch(e){}
+    reader=null;mode='none';evento(null,'Receptor desconectado');estado()}}
+
+function simular(){
+  if(mode==='usb')return;
+  if(mode==='sim'){clearInterval(timer);mode='none';evento(null,'Simulación detenida');estado();return}
+  if(D.some(d=>d.src!=='sim')&&!confirm('La simulación borra los datos reales que hay en pantalla. ¿Continuar?'))return;
+  reset();mode='sim';evento(null,'Inicio de simulación: datos inventados para practicar');estado();
+  // En tierra 4 s → una persona lo sube cargándolo a 20–25 m → espera arriba → lo suelta (autogiro) → aterriza.
+  // Como el firmware real, envía st=0 y flags=0: la estación calcula la fase con la altura.
+  const top=20+Math.random()*5;let t=0,s=0,h=0,v=0,st=0,tl=0,tc=0,ta=null;
   timer=setInterval(()=>{t+=.2;
-    if(st===0&&t>5)st=1;
-    if(st===1){v=7.5;if(h>=450){st=2;v=0}}else if(st===2){v=Math.max(v-1.6,-32);if(h<=200)st=3}
-    else if(st===3){if(++n3>5)st=4}else if(st===4){v+=(-10-v)*.15;if(h<=0){h=0;v=0;st=5;tl=t}}
-    h=Math.max(0,h+v*.2);const w=st>=3?1:.2,landed=st===5&&t-tl<.3,
-      g=st===2?.05:landed?8:1,fl=(st>=3?1:0)|(st>=4?2:0)|(st===5?4:0)|(st===5&&t-tl>3?8:0),
-      p=1013.25*Math.pow(1-h/44330,5.255)+Math.random()*.05;
-    if(Math.random()>.05)ingest(`$${s},${Math.round(t*1000)},${st},${p.toFixed(2)},${(27-h/150).toFixed(1)},${h.toFixed(2)},0.05,0.03,${g},${(35*w*Math.sin(t*1.3)).toFixed(1)},${(20*w*Math.sin(t*.8)).toFixed(1)},${(t*9%360).toFixed(0)},${fl},${fl&8?6.4:-1},${fl&8?212:-1},${-58-Math.round(h/12+Math.random()*3)},${(9-h/90).toFixed(1)}`);s++},200)}
-setInterval(()=>{const a=tLast?(Date.now()-tLast)/1000:null;$('age').textContent=a===null?'–':a.toFixed(1)+' s';
-  const ok=a!==null&&a<2;$('lk').className='chip'+(ok?' on':'');$('lk').textContent=a===null?'Sin enlace':ok?'Enlace activo':'Señal perdida'},250);
+    if(st===0&&t>4)st=1;
+    if(st===1){v=h<top?1.5:0;if(h>=top&&ta===null)ta=t;if(ta!==null&&t-ta>3){st=2;tc=t;v=0}}  // sube a pie ~1.5 m/s
+    else if(st===2)v+=(-9.5-v)*.35;                       // el autogiro frena desde que se suelta: ~9.5 m/s
+    h=Math.max(0,Math.min(top,h+v*.2));
+    if(st===2&&h<=0){st=3;tl=t;v=0}
+    if(st===3&&t-tl>15){clearInterval(timer);mode='none';evento(null,'Fin de la simulación');estado();return}
+    const giro=st===2,g=st===2&&t-tc<.5?.3:st===3&&t-tl<.3?6:st===1&&v>0?1+(Math.random()-.5)*.3:1,fl=0,
+      a=432+h+(Math.random()-.5)*.6,p=1013.25*Math.pow(1-a/44330,5.255); // altura barométrica: suelo inventado a 432 m
+    if(Math.random()>.03)ingest(`$${s},${Math.round(t*1000)},0,${p.toFixed(2)},${(26-h/150).toFixed(2)},${a.toFixed(2)},0.02,0.01,${g},${(giro?8*Math.sin(t*4):1).toFixed(2)},${(giro?6*Math.cos(t*4):-1.5).toFixed(2)},${(giro?t*720%360:140).toFixed(2)},${fl},-1,-1,${-52-Math.round(h/4+Math.random()*3)},${(9.5-h/20).toFixed(2)}`,'sim');
+    s++},200)}
+
+function estado(){
+  const a=tLast&&mode!=='none'?(Date.now()-tLast)/1000:null;$('age').textContent=a===null?'–':a<60?a.toFixed(1)+' s':Math.floor(a/60)+' min';
+  let cls='',txt;
+  if(err){cls='bad';txt=err}
+  else if(mode==='sim'){cls='sim';txt='Simulación en curso (datos inventados)'}
+  else if(mode==='usb'){if(a===null){cls='wait';txt='Conectado · esperando paquetes'}else if(a<2){cls='on';txt='Recibiendo datos'}else{cls='bad';txt='Conectado · sin paquetes'}}
+  else if(D.some(d=>d.src==='sim')){cls='sim';txt='Simulación terminada'}
+  else txt=D.length?'Receptor desconectado':'Sin conexión';
+  if(txt!==lkTxt){lkTxt=txt;$('lk').textContent=txt} // solo anunciar cambios reales (aria-live)
+  $('lk').className='chip '+cls;ui()}
+setInterval(estado,250);
 reset();
 </script></body></html>

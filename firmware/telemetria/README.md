@@ -54,7 +54,9 @@ El transmisor tiene un punto de integración llamado **`leerMedidas()`**. Actual
 
 Faltan modelos, conexión y calibración de sensores para integrar presión, temperatura, altura, aceleración y orientación. También faltan criterios de fases y eventos; no se implementó detección automática ni accionamiento de mecanismos. La distancia y rumbo de la carga secundaria permanecen en `-1`. El transmisor continúa enviando indefinidamente mientras esté alimentado; eso no prueba detección de aterrizaje ni el requisito de 10 s posterior a este.
 
-**El HTML actual no trata todos los `-1` como datos ausentes.** Mostrará esas cifras e incluso calculará `g≈1.73` con tres ejes en `-1`. Con esta base solo validar enlace, secuencias, RSSI/SNR y formato. No interpretar las gráficas de sensores como medidas reales. El problema del marcador ambiguo está explicado en `pruebas/RESULTADOS.md`; acordar cualquier cambio de contrato con el equipo.
+**La estación terrena muestra cada `-1` como "sin dato"** y no calcula velocidad, altura máxima ni aceleración total con esos campos. Con esta base solo se validan el enlace, las secuencias, RSSI/SNR y el formato. El problema del marcador ambiguo (un `-1.00` real en temperatura u orientación) está explicado en `pruebas/RESULTADOS.md`; acordar cualquier cambio de contrato con el equipo.
+
+**Misión v2 (ver `TELEMETRIA.md`):** la estación calcula las fases y el cero de altura con `alt`, así que el firmware puede dejar `st=0` y `flags=0`. `alt` debe ser la altura barométrica estándar, sin ponerla en cero a bordo. `sd` y `sb` quedan reservados en `-1`. El formato de 17 campos no cambió, así que estos sketches siguen siendo compatibles. `contrato.h` todavía acepta los rangos amplios de v1; ajustarlos cuando se implementen las fases.
 
 ## Primera conexión al frontend
 

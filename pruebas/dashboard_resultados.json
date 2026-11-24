@@ -1,8 +1,8 @@
 {
   "tipo": "QA lógica del dashboard; sin navegador ni hardware",
-  "total": 12,
-  "pasan": 4,
-  "fallan": 8,
+  "total": 20,
+  "pasan": 20,
+  "fallan": 0,
   "casos": [
     {
       "caso": "Acepta el paquete de 17 campos",
@@ -14,51 +14,75 @@
     },
     {
       "caso": "Rechaza campos vacíos",
-      "resultado": "FALLA",
-      "detalle": "Expected values to be strictly equal:\n\n1 !== 0\n"
+      "resultado": "PASA"
     },
     {
       "caso": "Rechaza infinito",
-      "resultado": "FALLA",
-      "detalle": "Expected values to be strictly equal:\n\n1 !== 0\n"
+      "resultado": "PASA"
     },
     {
-      "caso": "Rechaza fase fuera de 0–5",
-      "resultado": "FALLA",
-      "detalle": "Expected values to be strictly equal:\n\n1 !== 0\n"
+      "caso": "Rechaza st fuera de 0–3",
+      "resultado": "PASA"
     },
     {
-      "caso": "Rechaza flags fuera de los cuatro bits definidos",
-      "resultado": "FALLA",
-      "detalle": "Expected values to be strictly equal:\n\n1 !== 0\n"
+      "caso": "Calcula las 4 fases con la altura",
+      "resultado": "PASA"
+    },
+    {
+      "caso": "Esperar arriba sin moverse sigue siendo subida",
+      "resultado": "PASA"
+    },
+    {
+      "caso": "Mide 10 s transmitiendo después de aterrizar",
+      "resultado": "PASA"
+    },
+    {
+      "caso": "Toma el cero solo con los 5 primeros paquetes en tierra",
+      "resultado": "PASA"
+    },
+    {
+      "caso": "Sin barómetro no toma cero ni cambia de fase",
+      "resultado": "PASA"
+    },
+    {
+      "caso": "Rechaza flags fuera de los dos bits definidos",
+      "resultado": "PASA"
+    },
+    {
+      "caso": "Rechaza números con formato no decimal",
+      "resultado": "PASA"
     },
     {
       "caso": "No cuenta dos veces un paquete duplicado",
-      "resultado": "FALLA",
-      "detalle": "Expected values to be strictly equal:\n\n2 !== 1\n"
+      "resultado": "PASA"
     },
     {
       "caso": "Descarta paquetes atrasados para calcular pérdidas",
-      "resultado": "FALLA",
-      "detalle": "Expected values to be strictly equal:\n\n1 !== 0\n"
+      "resultado": "PASA"
     },
     {
       "caso": "Calcula las pérdidas conocidas",
       "resultado": "PASA"
     },
     {
-      "caso": "Mide el intervalo entre dos muestras de aterrizaje",
+      "caso": "Fijar cero conserva la altura máxima de la captura recalibrada",
       "resultado": "PASA"
     },
     {
-      "caso": "Fijar cero conserva la altura máxima de la captura recalibrada",
-      "resultado": "FALLA",
-      "detalle": "Expected values to be strictly equal:\n\n0 !== 80\n"
+      "caso": "Fijar cero conserva la altura original para exportar",
+      "resultado": "PASA"
     },
     {
-      "caso": "Fijar cero conserva la altura original para exportar",
-      "resultado": "FALLA",
-      "detalle": "Expected values to be strictly equal:\n\n0 !== 20\n"
+      "caso": "Sensores en -1 se muestran como sin dato, no como medida",
+      "resultado": "PASA"
+    },
+    {
+      "caso": "Un reinicio del CanSAT no inventa pérdidas",
+      "resultado": "PASA"
+    },
+    {
+      "caso": "Calcula la velocidad de descenso",
+      "resultado": "PASA"
     }
   ]
 }

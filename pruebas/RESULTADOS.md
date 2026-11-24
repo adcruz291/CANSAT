@@ -34,6 +34,8 @@ Ejecutar `node pruebas/dashboard_qa.cjs`. Cada caso inicia una estación limpia.
 | D07 | `cero` | Alturas 100, 20; fijar cero | Máximo 0 | Máximo recalibrado 80 m |
 | D08 | `cero` / `csv` | Altura 20; fijar cero; exportar | Medida original pasa a 0 | Conservar altura recibida y exportar corrección/offset en columna separada |
 
+**Actualización 24/11/2026:** D01–D08 corregidas en `estacion_terrena.html`. `dashboard_qa.cjs` se actualizó a la misión v2 (fases calculadas con la altura, cero automático en el suelo) y ahora tiene 20 casos, todos aprobados (`dashboard_resultados.json`). Los archivos `SIMULADO_*` y el simulador de `herramientas/telemetria.py` siguen siendo del vuelo v1 (450 m) y no se regeneraron.
+
 Los cuatro casos aprobados verifican aceptación de paquete correcto, rechazo de truncado, conteo de pérdidas conocidas e intervalo de 10 s entre dos muestras de aterrizaje. El último no garantiza recepción continua durante esos 10 s.
 
 ## Decisiones que Alex debe confirmar
