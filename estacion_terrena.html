@@ -64,6 +64,7 @@ pre{margin:6px 0 0;height:110px;overflow:auto;font-size:12px;color:var(--mu)}
  <div class="acts">
   <button class="p" id="bc" onclick="conectar()">Conectar receptor USB</button>
   <button id="b0" onclick="cero()" title="El cero se toma solo al empezar. Púlsalo únicamente para volver a tomarlo con el CanSAT en el suelo" disabled>Fijar altura 0</button>
+  <button id="bv" onclick="guardarVivo()" title="Escribe cada paquete en un archivo .csv de tu computadora mientras llegan: si se cierra el navegador no se pierde el vuelo">Guardar en vivo…</button>
   <button id="bx" onclick="csv()" disabled>Descargar CSV</button>
   <details class="mas"><summary class="btn">Más ▾</summary><div>
    <button id="bs" onclick="simular()">Simular vuelo de práctica</button>
@@ -71,13 +72,15 @@ pre{margin:6px 0 0;height:110px;overflow:auto;font-size:12px;color:var(--mu)}
    <button id="br" class="danger" onclick="borrar()">Borrar datos</button>
   </div></details>
  </div>
+ <span class="note" id="vivoN" role="status" style="flex-basis:100%;margin:0;text-align:right"></span>
 </header>
 <div class="simb" id="simb" role="alert" hidden><span id="simT"></span><button id="simB" onclick="borrar()">Borrar simulación</button></div>
 <div class="c guia" id="guia"><h2>Cómo usar la estación</h2><ol>
  <li>Conecta el receptor por USB y pulsa <b>Conectar receptor USB</b> (Chrome o Edge en computadora).</li>
+ <li>Pulsa <b>Guardar en vivo…</b> y elige dónde guardar el archivo: cada paquete se escribe ahí al llegar. No abras ese archivo en Excel durante la captura (lo bloquea); abre una copia.</li>
  <li>Enciende el CanSAT <b>en el suelo</b> y espera a que llegue el primer segundo de paquetes: ahí la estación toma el cero de altura sola.</li>
  <li>Sube cargándolo a 20–25 m (nunca más de 30 m) y suéltalo.</li>
- <li>Después del aterrizaje, pulsa <b>Descargar CSV</b> antes de cerrar la página.</li></ol>
+ <li>Después del aterrizaje, pulsa <b>Descargar CSV</b> antes de cerrar la página. Es la versión final: recalcula la altura con el cero definitivo.</li></ol>
  <span class="note">Si un sensor todavía no está integrado en el CanSAT, su tarjeta dice “sin dato”: nada se rellena con valores inventados.</span></div>
 <ol id="ph" aria-label="Fases de la misión, calculadas con la altura" title="Fase calculada en la estación con la altura: sube, se suelta y vuelve a 0 m"></ol>
 <section class="top">
@@ -121,6 +124,12 @@ const LIM={max:30,lanzar:[20,25],desc:[8,12],post:10};
 // Umbrales de fase: POR CONFIRMAR con una prueba real del barómetro.
 const FASE={suelo:1,sube:.3,baja:-2,caida:1.5}; // m, m/s, m/s, m bajo la altura máxima
 let D,EV,off,offTipo,base,maxA,lost,dup,late,bad,tLast,tL,gapL,mode='none',err='',hv=null,timer=null,pend=false,reader=null,lkTxt='';
+// Hora real: el CanSAT no tiene reloj, solo ms desde que arrancó. La PC pone la hora.
+// ancla = hora de la PC que corresponde a t=0; se toma el mínimo de (llegada − t) porque la radio y el USB solo pueden retrasar.
+let ancla=null,vivo=null,bajado=0,cola=Promise.resolve();
+const p2=(x,w=2)=>String(x).padStart(w,'0');
+const fecha=ms=>{const x=new Date(ms);return `${x.getFullYear()}-${p2(x.getMonth()+1)}-${p2(x.getDate())}`};
+const hora=ms=>{const x=new Date(ms);return `${p2(x.getHours())}:${p2(x.getMinutes())}:${p2(x.getSeconds())}.${p2(x.getMilliseconds(),3)}`};
 const has=x=>x!=null&&x!==-1; // -1 = sin dato (TELEMETRIA.md)
 const ent=(x,m)=>Number.isInteger(x)&&x>=0&&x<=m;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -134,10 +143,10 @@ function faseDe(d,q){
   else if(f===2&&d.h<FASE.suelo)f=3;
   return f}
 
-function reset(){clearInterval(timer);timer=null;D=[];EV=[];off=null;offTipo=null;base=[];maxA=null;lost=dup=late=bad=0;tLast=0;tL=null;gapL=0;err='';$('log').textContent='';draw()}
+function reset(){clearInterval(timer);timer=null;D=[];EV=[];off=null;offTipo=null;base=[];maxA=null;lost=dup=late=bad=0;tLast=0;tL=null;gapL=0;err='';ancla=null;vivo=null;bajado=0;$('log').textContent='';draw()}
 function evento(d,m){
-  const h=new Date();
-  EV.push({t:d?`T+${d.t.toFixed(1)} s`:h.toTimeString().slice(0,8),m});if(EV.length>200)EV.shift();draw()}
+  const h=hora(d?d.pc:Date.now()).slice(0,8);
+  EV.push({t:d?`${h} · T+${d.t.toFixed(1)} s`:h,m});if(EV.length>200)EV.shift();draw()}
 function log(line){const L=$('log');L.textContent+=line+'\n';if(L.textContent.length>8000)L.textContent=L.textContent.slice(-6000);L.scrollTop=1e9}
 
 function ingest(line,src='usb'){
@@ -149,8 +158,8 @@ function ingest(line,src='usb'){
   const d={};F.forEach((k,i)=>d[k]=v[i]);
   if(!ent(d.seq,U32-1)||!ent(d.ms,U32-1)||!ent(d.st,3)||!ent(d.flags,3)){bad++;draw();return}
   const q=D[D.length-1],now=Date.now();
-  d.src=src;d.vel=null;
-  if(!q){d.t=0;d.ses=1;evento(d,'Primer paquete recibido')}
+  d.src=src;d.vel=null;d.pc=now;
+  if(!q){d.t=0;d.ses=1;ancla=now;evento(d,'Primer paquete recibido')}
   else{
     const ds=(d.seq-q.seq+U32)%U32,dms=(d.ms-q.ms+U32)%U32;
     // Ambos contadores retroceden y hubo pausa (el arranque tarda > 1 s): el CanSAT se reinició.
@@ -161,6 +170,7 @@ function ingest(line,src='usb'){
       if(ds>=U32/2||dms===0||dms>=U32/2){late++;draw();return}
       lost+=ds-1;d.t=q.t+dms/1000;d.ses=q.ses;
     }
+    ancla=Math.min(ancla,now-d.t*1000);
   }
   // El CanSAT arranca en el suelo: el promedio de las 5 primeras alturas es el cero.
   if(off==null&&has(d.alt)&&d.ses===1){base.push(d.alt);
@@ -229,7 +239,14 @@ function ui(){
   const usb=mode==='usb',sim=mode==='sim';
   $('bc').textContent=usb?'Desconectar receptor':'Conectar receptor USB';$('bc').className=usb?'':'p';
   $('bs').textContent=sim?'Detener simulación':'Simular vuelo de práctica';$('bs').disabled=usb;
-  $('b0').disabled=!D.some(d=>has(d.alt));$('bx').disabled=!D.length;$('br').disabled=!D.length&&!sim}
+  $('b0').disabled=!D.some(d=>has(d.alt));$('bx').disabled=!D.length;$('br').disabled=!D.length&&!sim;
+  // Nunca guardar práctica en el archivo del vuelo real.
+  $('bv').textContent=vivo?'Detener guardado en vivo':'Guardar en vivo…';
+  $('bv').disabled=sim||D.some(d=>d.src==='sim');
+  const vn=$('vivoN');
+  if(!vivo){vn.textContent='';vn.className='note'}
+  else if(vivo.err){vn.textContent=`⚠ No se puede escribir en ${vivo.h.name}: ${D.length-vivo.n} paquetes pendientes (¿está abierto en Excel?)`;vn.className='note bad'}
+  else{vn.textContent=`● Guardando en vivo en ${vivo.h.name} · ${vivo.n} paquetes escritos`;vn.className='note ok'}}
 
 function chart(id,get,o){
   const c=$(id),r=devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;if(!w)return;
@@ -256,17 +273,45 @@ document.querySelectorAll('canvas').forEach(c=>{
   c.onpointermove=e=>{const b=c.getBoundingClientRect();hv=Math.max(0,Math.min(1,(e.clientX-b.left-44)/(b.width-56)));draw()};
   c.onpointerleave=()=>{hv=null;draw()}});
 
+// hora_recepcion: reloj de la PC al llegar el paquete (incluye el retraso de radio y USB).
+// hora_medicion: hora estimada en que el CanSAT tomó la muestra (ancla + tiempo del CanSAT); no tiene el titubeo de la radio.
+const CAB=['origen','sesion','fecha','hora_recepcion','hora_medicion','t_s',...F,'cero_m','alt_rel_m','fase_calc','vel_calc_ms','g_calc'];
+const n3=v=>v==null?'':(+v).toFixed(3);
+const fila=d=>[d.src==='sim'?'SIMULADO':'receptor',d.ses,fecha(d.pc),hora(d.pc),hora(ancla+d.t*1000),n3(d.t),...F.map(f=>d[f]),
+  n3(off),off==null?'':n3(d.h),PH[d.f],n3(d.vel),n3(d.g)].join(',');
+const nombre=()=>{const x=Date.now();return (D.some(d=>d.src==='sim')?'SIMULADO_':'')+'telemetria_'+fecha(x)+'_'+hora(x).slice(0,8).replace(/:/g,'-')+'.csv'};
 function csv(){
   if(!D.length)return;
-  const sim=D.some(d=>d.src==='sim'),n=v=>v==null?'':(+v).toFixed(3);
-  const k=['origen','sesion','t_s',...F,'cero_m','alt_rel_m','fase_calc','vel_calc_ms','g_calc'];
-  const rows=D.map(d=>[d.src==='sim'?'SIMULADO':'receptor',d.ses,n(d.t),...F.map(f=>d[f]),n(off),n(d.h),PH[d.f],n(d.vel),n(d.g)].join(','));
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([[k.join(','),...rows].join('\n')],{type:'text/csv'}));
-  a.download=(sim?'SIMULADO_':'')+'telemetria_'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.csv';a.click()}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([[CAB.join(','),...D.map(fila)].join('\n')],{type:'text/csv'}));
+  a.download=nombre();a.click();bajado=D.length}
 
-function borrar(){
+// Guardado en vivo (Chrome/Edge): cada segundo agrega al archivo los paquetes nuevos y lo cierra,
+// porque el navegador solo confirma lo escrito al cerrar. Si falla (p. ej. Excel lo tiene abierto), reintenta sin perder filas.
+async function guardarVivo(){
+  if(vivo){const v=vivo;await volcar();vivo=null;evento(null,`Guardado en vivo detenido: ${v.n} paquetes en ${v.h.name}`);return}
+  if(typeof showSaveFilePicker!=='function'){err='Este navegador no puede guardar en vivo: usa Chrome o Edge en computadora.';estado();return}
+  let h;
+  try{h=await showSaveFilePicker({suggestedName:nombre(),types:[{description:'Tabla CSV',accept:{'text/csv':['.csv']}}]})}
+  catch(e){if(e.name!=='AbortError'){err='No se pudo crear el archivo: '+e.message;estado()}return}
+  try{const k=D.length,w=await h.createWritable();await w.write([CAB.join(','),...D.slice(0,k).map(fila)].join('\n')+'\n');await w.close();
+    vivo={h,n:k,err:''};err='';evento(null,'Guardando en vivo en '+h.name)}
+  catch(e){err='No se pudo escribir el archivo: '+e.message;estado()}}
+function volcar(){return cola=cola.then(async()=>{
+  const v=vivo;if(!v||v.n>=D.length)return;
+  const k=D.length,txt=D.slice(v.n,k).map(fila).join('\n')+'\n';let w=null;
+  try{w=await v.h.createWritable({keepExistingData:true});await w.seek((await v.h.getFile()).size);await w.write(txt);await w.close();
+    v.n=k;if(v.err){v.err='';evento(null,'Guardado en vivo recuperado')}}
+  catch(e){if(w)try{await w.abort()}catch(_){}
+    if(!v.err)evento(null,'⚠ No se pudo escribir el archivo en vivo ('+e.message+'). Se reintenta cada segundo.');v.err=e.message}
+  ui()})}
+setInterval(volcar,1000);
+// Avisar antes de cerrar la página si hay datos reales que no están en ningún archivo.
+if(typeof addEventListener==='function')addEventListener('beforeunload',e=>{
+  if(D.some(d=>d.src!=='sim')&&bajado<D.length&&!(vivo&&vivo.n>=D.length)){e.preventDefault();e.returnValue=''}});
+
+async function borrar(){
   if(D.some(d=>d.src!=='sim')&&!confirm('¿Borrar todos los datos recibidos? Descarga antes el CSV si los vas a necesitar.'))return;
-  if(mode==='sim')mode='none';reset();estado()}
+  await volcar();if(mode==='sim')mode='none';reset();estado()}
 
 async function conectar(){
   if(mode==='usb'){if(reader)reader.cancel();return}
@@ -287,11 +332,11 @@ async function conectar(){
   finally{try{reader.releaseLock()}catch(e){}await closed;try{await port.close()}catch(e){}
     reader=null;mode='none';evento(null,'Receptor desconectado');estado()}}
 
-function simular(){
+async function simular(){
   if(mode==='usb')return;
   if(mode==='sim'){clearInterval(timer);mode='none';evento(null,'Simulación detenida');estado();return}
   if(D.some(d=>d.src!=='sim')&&!confirm('La simulación borra los datos reales que hay en pantalla. ¿Continuar?'))return;
-  reset();mode='sim';evento(null,'Inicio de simulación: datos inventados para practicar');estado();
+  await volcar();reset();mode='sim';evento(null,'Inicio de simulación: datos inventados para practicar');estado();
   // En tierra 4 s → una persona lo sube cargándolo a 20–25 m → espera arriba → lo suelta (autogiro) → aterriza.
   // Como el firmware real, envía st=0 y flags=0: la estación calcula la fase con la altura.
   const top=20+Math.random()*5;let t=0,s=0,h=0,v=0,st=0,tl=0,tc=0,ta=null;

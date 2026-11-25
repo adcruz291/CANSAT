@@ -68,6 +68,15 @@ Ejemplo: `$120,24400,0,962.30,26.4,450.52,0.02,0.01,1.00,3.5,-2.1,141,0,-1,-1,-7
 
 **Derivados en tierra** (no se transmiten): fase, velocidad vertical (derivada suavizada de `alt`), altura máxima, módulo de aceleración en g, paquetes perdidos y tiempo transmitido tras aterrizar.
 
+### CSV de la estación terrena
+
+Columnas: `origen,sesion,fecha,hora_recepcion,hora_medicion,t_s`, los 17 campos del paquete y `cero_m,alt_rel_m,fase_calc,vel_calc_ms,g_calc`.
+
+- **Hora real:** el CanSAT no tiene reloj, así que la pone la computadora (hora local; conviene que esté sincronizada por internet). `hora_recepcion` es cuándo llegó el paquete e incluye el retraso de radio y USB. `hora_medicion` es la hora estimada en que el CanSAT tomó la muestra: hora de la PC que corresponde a `t_s = 0` más el tiempo del CanSAT, sin el titubeo de la radio. Formato `HH:MM:SS.mmm`.
+- **Guardar en vivo** (Chrome/Edge): cada segundo se agregan al archivo elegido los paquetes nuevos, para no perder el vuelo si se cierra el navegador. Excel bloquea el archivo si se abre durante la captura; la estación reintenta sin perder filas. Las filas escritas antes de tomar el cero tienen `cero_m` y `alt_rel_m` vacíos.
+- **Descargar CSV** genera la versión final, con la altura recalculada con el cero definitivo.
+- `alt_rel_m` queda vacío mientras no haya cero, para no confundir la altura barométrica con la altura sobre el suelo.
+
 ## 3. Decisiones de diseño (propuestas)
 
 - **Tasa:** 5 Hz. Con SF7 y ancho de banda de 250 kHz, un paquete de unos 70 bytes ocupa ≈ 65 ms en el aire. **Ojo con la misión nueva:** desde 20–25 m, a 8–12 m/s, el descenso dura solo 2–3 s, o sea 10–15 paquetes. Conviene subir a 10 Hz (`PERIODO_MS 100`) si el enlace lo aguanta.
